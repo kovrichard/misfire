@@ -99,6 +99,16 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
   {
+    key: "linkedin",
+    kicker: "Advertising",
+    name: "LinkedIn Insight",
+    items: [
+      "Partner ID from the collect beacon",
+      "Loaded but no partner ID configured",
+      "Error pings not counted as success",
+    ],
+  },
+  {
     key: "meta",
     kicker: "Advertising",
     name: "Meta Pixel",

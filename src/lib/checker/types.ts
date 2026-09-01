@@ -10,6 +10,7 @@ export type ToolKey =
   | "datafast"
   | "umami"
   | "googleads"
+  | "linkedin"
   | "meta"
   | "hotjar";
 

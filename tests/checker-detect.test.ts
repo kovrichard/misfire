@@ -733,3 +733,61 @@ describe("analyze — Google Ads and GA4 do not claim each other", () => {
     expect(toolOf(report, "Google Ads").ids).toEqual(["AW-987654321"]);
   });
 });
+
+const LI_JS = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+const LI_HIT = "https://px.ads.linkedin.com/collect?pid=4821566&fmt=gif";
+const LI_ERROR = "https://px.ads.linkedin.com/insight_tag_errors.gif?pid=4821566";
+
+describe("analyze — LinkedIn Insight", () => {
+  it("reads the partner id off the collect beacon", () => {
+    const report = analyze(
+      snap({
+        resources: [LI_JS, LI_HIT],
+        scripts: [tag(LI_JS)],
+        globals: ["_linkedin_data_partner_id"],
+      })
+    );
+    const li = toolOf(report, "LinkedIn Insight");
+    expect(li.ids).toEqual(["4821566"]);
+    expect(li.hits).toBe(1);
+    expect(li.level).toBe("ok");
+  });
+
+  it("does not count an error ping as a hit", () => {
+    const report = analyze(
+      snap({
+        resources: [LI_JS, LI_ERROR],
+        scripts: [tag(LI_JS)],
+        globals: ["_linkedin_data_partner_id"],
+      })
+    );
+    expect(toolOf(report, "LinkedIn Insight").hits).toBe(0);
+    expect(titles(report, "LinkedIn Insight")).toContain("Nothing sent yet");
+  });
+
+  it("warns when the tag loads without a partner id configured", () => {
+    const report = analyze(snap({ resources: [LI_JS, LI_HIT], scripts: [tag(LI_JS)] }));
+    expect(titles(report, "LinkedIn Insight")).toContain(
+      "Script loaded but window._linkedin_data_partner_id is missing"
+    );
+  });
+
+  it("repeats of one partner id are not mistaken for a double install", () => {
+    const report = analyze(
+      snap({
+        resources: [LI_JS, LI_HIT, LI_HIT, LI_HIT],
+        scripts: [tag(LI_JS)],
+        globals: ["_linkedin_data_partner_id"],
+      })
+    );
+    expect(toolOf(report, "LinkedIn Insight").ids).toEqual(["4821566"]);
+    expect(titles(report, "LinkedIn Insight")).not.toContain("Initialised twice");
+    expect(toolOf(report, "LinkedIn Insight").hits).toBe(3);
+  });
+
+  it("errors when picked but absent", () => {
+    expect(titles(analyze(snap(), ["linkedin"]), "LinkedIn Insight")).toContain(
+      "No LinkedIn Insight tag found"
+    );
+  });
+});

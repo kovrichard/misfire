@@ -289,6 +289,14 @@ function specIds(spec: ToolSpec, snapshot: Snapshot, urls: string[]): string[] {
   return [...fromUrl, ...fromData, ...fromLayer];
 }
 
+function beaconIds(spec: ToolSpec, beacons: string[]): string[] {
+  const param = spec.idFromBeacon;
+  if (!param) return [];
+  return beacons
+    .map((url) => queryParam(url, param))
+    .filter((id): id is string => id !== null);
+}
+
 function beaconEvents(spec: ToolSpec, beacons: string[]): string[] {
   const param = spec.eventParam;
   if (!param) return [];
@@ -324,8 +332,8 @@ function detectSpec(
   }
 
   const allIds = specIds(spec, snapshot, [...loaded, ...declared]);
-  const ids = unique(allIds);
   const beacons = spec.beacon ? matching(snapshot.resources, spec.beacon) : [];
+  const ids = unique([...allIds, ...beaconIds(spec, beacons)]);
   const events = beaconEvents(spec, beacons);
   const isDebug = spec.debugTag
     ? matching([...loaded, ...declared], spec.debugTag).length > 0

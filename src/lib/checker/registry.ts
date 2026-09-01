@@ -11,6 +11,7 @@ export const TOOL_KEYS: ToolKey[] = [
   "datafast",
   "umami",
   "googleads",
+  "linkedin",
   "meta",
   "hotjar",
 ];
@@ -27,6 +28,7 @@ export const TOOL_NAMES: Record<ToolKey, string> = {
   datafast: "Datafast",
   umami: "Umami",
   googleads: "Google Ads",
+  linkedin: "LinkedIn Insight",
   meta: "Meta Pixel",
   hotjar: "Hotjar",
 };
@@ -44,6 +46,7 @@ export const PROBED_GLOBALS = [
   "fathom",
   "datafast",
   "umami",
+  "_linkedin_data_partner_id",
   "OneTrust",
   "OptanonActiveGroups",
   "Cookiebot",
@@ -62,6 +65,7 @@ export interface ToolSpec {
   idFromUrl?: RegExp;
   idFromData?: string;
   idFromDataLayer?: (dataLayer: unknown[]) => string[];
+  idFromBeacon?: string;
   eventParam?: string;
   baseEvent?: string;
   debugTag?: RegExp;
@@ -133,6 +137,15 @@ export const TOOL_SPECS: ToolSpec[] = [
     idFromUrl: /[?&]id=(AW-[A-Z0-9]+)/i,
     idFromDataLayer: googleAdsIds,
     unit: "conversion",
+  },
+  {
+    key: "linkedin",
+    name: "LinkedIn Insight",
+    tag: /snap\.licdn\.com\/li\.lms-analytics\/insight[a-z.]*\.js/i,
+    beacon: /px\.ads\.linkedin\.com\/(collect|attribution_trigger)/i,
+    global: "_linkedin_data_partner_id",
+    idFromBeacon: "pid",
+    unit: "hit",
   },
   {
     key: "meta",
