@@ -16,6 +16,7 @@
     "predev": "bun run build:checker",
     "prebuild": "bun run build:checker",
     "prebuild:standalone": "bun run build:checker",
+    "pretest": "bun run build:checker",
     "build:standalone": "EXPORT_MODE=standalone next build",
     "start": "next start",
     "type-check": "tsc --noEmit",
