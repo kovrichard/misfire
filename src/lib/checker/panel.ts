@@ -33,12 +33,19 @@ button:hover { color: #e6edf3; border-color: #8b949e; }
 .card[data-corner="top-right"] { top: 16px; right: 16px; }
 .card[data-corner="bottom-left"] { bottom: 16px; left: 16px; }
 .card[data-corner="bottom-right"] { bottom: 16px; right: 16px; }
-.settings { padding: 8px 12px; border-bottom: 1px solid #21262d; flex: none; display: flex; align-items: center; gap: 8px; }
-.settings[hidden] { display: none; }
-.settings label { color: #8b949e; font-size: 11px; }
-.settings select {
-  all: unset; flex: 1; cursor: pointer; padding: 3px 6px; border-radius: 5px;
-  font: inherit; font-size: 11px; color: #e6edf3; border: 1px solid #30363d; background: #161b22;
+.menu {
+  position: absolute; top: 40px; right: 10px; z-index: 2; min-width: 156px;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 10px; border-radius: 8px;
+  background: #161b22; border: 1px solid #30363d;
+  box-shadow: 0 8px 24px rgba(0,0,0,.6);
+}
+.menu[hidden] { display: none; }
+.menu label { color: #8b949e; font-size: 11px; }
+.menu select {
+  width: 100%; cursor: pointer; padding: 4px 6px; border-radius: 5px;
+  font: inherit; font-size: 12px; color: #e6edf3;
+  background: #0d1117; border: 1px solid #30363d;
 }
 .url { padding: 8px 12px; color: #8b949e; font-size: 11px; word-break: break-all; border-bottom: 1px solid #21262d; flex: none; }
 .scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
@@ -131,8 +138,8 @@ export function mountPanel(onClose: () => void): Panel {
   close.title = "Close";
   header.append(el("span", "brand", "Misfire"), gear, close);
 
-  const settings = el("div", "settings");
-  settings.hidden = true;
+  const menu = el("div", "menu");
+  menu.hidden = true;
   const picker = el("select");
   picker.setAttribute("aria-label", "Panel position");
   for (const [value, label] of CORNERS) {
@@ -141,11 +148,11 @@ export function mountPanel(onClose: () => void): Panel {
     picker.append(option);
   }
   picker.value = DEFAULT_CORNER;
-  settings.append(el("label", undefined, "Position"), picker);
+  menu.append(el("label", undefined, "Position"), picker);
 
   const url = el("div", "url");
   const body = el("div", "scroll");
-  card.append(header, settings, url, body);
+  card.append(header, menu, url, body);
   root.append(style, card);
   document.body.append(host);
 
@@ -155,11 +162,12 @@ export function mountPanel(onClose: () => void): Panel {
   });
 
   gear.addEventListener("click", () => {
-    settings.hidden = !settings.hidden;
+    menu.hidden = !menu.hidden;
   });
 
   picker.addEventListener("change", () => {
     card.dataset.corner = picker.value;
+    menu.hidden = true;
   });
 
   let rendered = "";
