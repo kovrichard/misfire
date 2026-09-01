@@ -9,7 +9,6 @@
     ".agents/hooks/*",
     "src/components/ui/*",
     ".opencode/plugins/lint.ts",
-    "src/lib/metadata.ts",
     "src/components/marketing/json-ld.tsx",
     "src/hooks/use-mobile.ts"
   ],

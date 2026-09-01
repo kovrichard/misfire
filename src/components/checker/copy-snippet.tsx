@@ -32,7 +32,7 @@ export function CopySnippet({
       <Button
         variant="outline"
         onClick={copy}
-        className="h-auto shrink-0 rounded-full bg-canvas px-[14px] py-[4px] font-heading font-normal text-[12px] leading-[1.2] shadow-none"
+        className="h-auto min-w-[76px] shrink-0 rounded-full bg-canvas px-[14px] py-[4px] font-heading font-normal text-[12px] leading-[1.2] shadow-none"
       >
         {copied ? "Copied" : "Copy"}
       </Button>
