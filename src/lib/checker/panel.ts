@@ -12,6 +12,27 @@ const CORNERS = [
 ] as const;
 
 const DEFAULT_CORNER = "bottom-right";
+const INSET = 16;
+const SNAP_MS = 180;
+
+type Corner = (typeof CORNERS)[number][0];
+
+function nearestCorner(x: number, y: number): Corner {
+  const vertical = y < window.innerHeight / 2 ? "top" : "bottom";
+  const horizontal = x < window.innerWidth / 2 ? "left" : "right";
+  return `${vertical}-${horizontal}` as Corner;
+}
+
+function cornerOffset(corner: Corner, width: number, height: number) {
+  return {
+    left: corner.endsWith("left") ? INSET : window.innerWidth - width - INSET,
+    top: corner.startsWith("top") ? INSET : window.innerHeight - height - INSET,
+  };
+}
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 const STYLE = `
 :host { all: initial; }
@@ -22,7 +43,8 @@ const STYLE = `
   background: #0d1117; color: #e6edf3; border: 1px solid #30363d; border-radius: 10px;
   box-shadow: 0 12px 40px rgba(0,0,0,.5); font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
 }
-header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #30363d; flex: none; }
+header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #30363d; flex: none; cursor: grab; user-select: none; touch-action: none; }
+header:active { cursor: grabbing; }
 .brand { font-weight: 600; letter-spacing: .02em; margin-right: auto; }
 button {
   all: unset; cursor: pointer; padding: 2px 8px; border-radius: 5px; font-size: 11px;
@@ -33,6 +55,8 @@ button:hover { color: #e6edf3; border-color: #8b949e; }
 .card[data-corner="top-right"] { top: 16px; right: 16px; }
 .card[data-corner="bottom-left"] { bottom: 16px; left: 16px; }
 .card[data-corner="bottom-right"] { bottom: 16px; right: 16px; }
+.card.floating { right: auto; bottom: auto; }
+.card.snapping { transition: left .18s cubic-bezier(.22,1,.36,1), top .18s cubic-bezier(.22,1,.36,1); }
 .menu {
   position: absolute; top: 40px; right: 10px; z-index: 2; min-width: 156px;
   display: flex; flex-direction: column; gap: 6px;
@@ -165,10 +189,60 @@ export function mountPanel(onClose: () => void): Panel {
     menu.hidden = !menu.hidden;
   });
 
+  const settle = (corner: Corner) => {
+    card.classList.remove("floating", "snapping");
+    card.style.left = "";
+    card.style.top = "";
+    card.dataset.corner = corner;
+    picker.value = corner;
+  };
+
+  const snapTo = (corner: Corner) => {
+    if (prefersReducedMotion()) {
+      settle(corner);
+      return;
+    }
+    const rect = card.getBoundingClientRect();
+    const target = cornerOffset(corner, rect.width, rect.height);
+    card.classList.add("snapping");
+    card.style.left = `${target.left}px`;
+    card.style.top = `${target.top}px`;
+    setTimeout(() => settle(corner), SNAP_MS);
+  };
+
   picker.addEventListener("change", () => {
-    card.dataset.corner = picker.value;
+    settle(picker.value as Corner);
     menu.hidden = true;
   });
+
+  let grab: { dx: number; dy: number } | null = null;
+
+  header.addEventListener("pointerdown", (event) => {
+    if (event.target instanceof Element && event.target.closest("button")) return;
+    const rect = card.getBoundingClientRect();
+    grab = { dx: event.clientX - rect.left, dy: event.clientY - rect.top };
+    card.classList.remove("snapping");
+    card.classList.add("floating");
+    card.style.left = `${rect.left}px`;
+    card.style.top = `${rect.top}px`;
+    header.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+
+  header.addEventListener("pointermove", (event) => {
+    if (!grab) return;
+    card.style.left = `${event.clientX - grab.dx}px`;
+    card.style.top = `${event.clientY - grab.dy}px`;
+  });
+
+  const release = (event: PointerEvent) => {
+    if (!grab) return;
+    grab = null;
+    snapTo(nearestCorner(event.clientX, event.clientY));
+  };
+
+  header.addEventListener("pointerup", release);
+  header.addEventListener("pointercancel", release);
 
   let rendered = "";
 
