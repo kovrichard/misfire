@@ -70,6 +70,7 @@ export interface ToolSpec {
   idTransform?: (raw: string) => string | null;
   idFromDataLayer?: (dataLayer: unknown[]) => string[];
   idFromBeacon?: string;
+  idFromResource?: RegExp;
   eventParam?: string;
   baseEvent?: string;
   debugTag?: RegExp;
@@ -179,6 +180,7 @@ export const TOOL_SPECS: ToolSpec[] = [
     beacon: /facebook\.com\/tr\b/i,
     global: "fbq",
     idFromDataLayer: metaPixelIds,
+    idFromResource: /connect\.facebook\.net\/signals\/config\/(\d+)/i,
     eventParam: "ev",
     baseEvent: "PageView",
     unit: "hit",

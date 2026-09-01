@@ -859,3 +859,33 @@ describe("analyze — Cloudflare Web Analytics", () => {
     );
   });
 });
+
+const META_CONFIG =
+  "https://connect.facebook.net/signals/config/2233705693599817?v=2.9.390&r=stable";
+
+describe("analyze — Meta pixel id on a real page", () => {
+  it("finds the id from signals/config once fbevents has drained the queue", () => {
+    const report = analyze(
+      snap({
+        resources: [META_JS, META_CONFIG],
+        scripts: [tag(META_JS)],
+        dataLayer: [],
+        globals: ["fbq"],
+      })
+    );
+    expect(toolOf(report, "Meta Pixel").ids).toEqual(["2233705693599817"]);
+  });
+
+  it("does not double count when the queue and the config agree", () => {
+    const report = analyze(
+      snap({
+        resources: [META_JS, META_CONFIG, META_HIT],
+        scripts: [tag(META_JS)],
+        dataLayer: [["init", "2233705693599817"]],
+        globals: ["fbq"],
+      })
+    );
+    expect(toolOf(report, "Meta Pixel").ids).toEqual(["2233705693599817"]);
+    expect(titles(report, "Meta Pixel")).not.toContain("Initialised twice");
+  });
+});
