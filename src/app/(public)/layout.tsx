@@ -67,6 +67,15 @@ export default function Layout({
           ·
         </span>
         <a
+          href="/privacy-policy"
+          className="text-[13px] text-neutral-600 no-underline hover:text-brand-700"
+        >
+          Privacy
+        </a>
+        <span aria-hidden="true" className="text-[13px] text-neutral-400">
+          ·
+        </span>
+        <a
           href={catalystReferralUrl(conf.authority)}
           target="_blank"
           rel="noopener noreferrer"
