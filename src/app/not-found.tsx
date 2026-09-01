@@ -1,9 +1,3 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  robots: "noindex, nofollow",
-};
-
 export default function NotFound() {
   return (
     <main className="page-column flex flex-1 flex-col items-start justify-center gap-[var(--space-6)] py-[clamp(48px,10vw,96px)]">
