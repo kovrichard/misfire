@@ -1,10 +1,9 @@
 import { analyze } from "./detect";
 import { mountPanel } from "./panel";
 import { TOOL_KEYS } from "./registry";
-import { readSnapshot } from "./snapshot";
+import { readSnapshot, widenResourceBuffer } from "./snapshot";
 import type { ToolKey } from "./types";
 
-const WATCH_MS = 20000;
 const POLL_MS = 1000;
 
 function knownKeys(raw: string[]): ToolKey[] {
@@ -35,8 +34,17 @@ function selectedTools(): ToolKey[] {
 }
 
 function start(): void {
+  widenResourceBuffer();
   const tools = selectedTools();
-  const panel = mountPanel();
+
+  let observer: PerformanceObserver | null = null;
+  let poll: ReturnType<typeof setInterval> | null = null;
+
+  const panel = mountPanel(() => {
+    observer?.disconnect();
+    if (poll !== null) clearInterval(poll);
+  });
+
   const render = () => {
     panel.update(analyze(readSnapshot(), tools));
   };
@@ -53,14 +61,9 @@ function start(): void {
 
   render();
 
-  const observer = new PerformanceObserver(schedule);
+  observer = new PerformanceObserver(schedule);
   observer.observe({ type: "resource", buffered: false });
-  const poll = setInterval(schedule, POLL_MS);
-
-  setTimeout(() => {
-    observer.disconnect();
-    clearInterval(poll);
-  }, WATCH_MS);
+  poll = setInterval(schedule, POLL_MS);
 }
 
 start();

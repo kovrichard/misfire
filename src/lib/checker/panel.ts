@@ -91,7 +91,7 @@ export interface Panel {
   update(report: Report): void;
 }
 
-export function mountPanel(): Panel {
+export function mountPanel(onClose: () => void): Panel {
   document.getElementById(PANEL_HOST_ID)?.remove();
 
   const host = el("div");
@@ -112,10 +112,18 @@ export function mountPanel(): Panel {
   root.append(style, card);
   document.body.append(host);
 
-  close.addEventListener("click", () => host.remove());
+  close.addEventListener("click", () => {
+    host.remove();
+    onClose();
+  });
+
+  let rendered = "";
 
   return {
     update(report: Report): void {
+      const next = JSON.stringify(report);
+      if (next === rendered) return;
+      rendered = next;
       url.textContent = report.href;
       body.replaceChildren(renderBody(report));
     },

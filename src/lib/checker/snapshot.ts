@@ -10,6 +10,13 @@ function normaliseDataLayer(raw: unknown): unknown[] {
   return raw.map((entry) => (isArgumentsObject(entry) ? Array.from(entry) : entry));
 }
 
+const RESOURCE_BUFFER = 1000;
+
+export function widenResourceBuffer(): void {
+  if (typeof performance.setResourceTimingBufferSize !== "function") return;
+  performance.setResourceTimingBufferSize(RESOURCE_BUFFER);
+}
+
 function requestedUrls(): string[] {
   return performance
     .getEntriesByType("resource")
