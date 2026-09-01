@@ -34,6 +34,7 @@ button:hover { color: #e6edf3; border-color: #8b949e; }
 .card[data-corner="bottom-left"] { bottom: 16px; left: 16px; }
 .card[data-corner="bottom-right"] { bottom: 16px; right: 16px; }
 .settings { padding: 8px 12px; border-bottom: 1px solid #21262d; flex: none; display: flex; align-items: center; gap: 8px; }
+.settings[hidden] { display: none; }
 .settings label { color: #8b949e; font-size: 11px; }
 .settings select {
   all: unset; flex: 1; cursor: pointer; padding: 3px 6px; border-radius: 5px;
