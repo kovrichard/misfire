@@ -68,7 +68,7 @@ export default function CookiePopup() {
     >
       <div className="mb-2 flex items-center gap-2">
         <Cookie />
-        <h4 className="font-semibold">Cookie consent</h4>
+        <h2 className="font-semibold">Cookie consent</h2>
       </div>
       <div className="mb-3 text-sm">
         <p>This website uses cookies to improve the user experience.</p>

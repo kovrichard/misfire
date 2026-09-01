@@ -23,9 +23,9 @@ function StepHeading({ step, label }: Readonly<{ step: string; label: string }>)
   return (
     <div className="flex items-baseline gap-[var(--space-2)]">
       <span className="font-heading text-[22px] text-brand">{step}</span>
-      <h6 className="mb-[var(--space-2)] text-[13px] text-brand-700 uppercase tracking-[0.08em]">
+      <h2 className="mb-[var(--space-2)] text-[13px] text-brand-700 uppercase tracking-[0.08em]">
         {label}
-      </h6>
+      </h2>
     </div>
   );
 }
@@ -164,9 +164,9 @@ export function InstallFlow({
             <CopySnippet code={loaderSnippet(host, ordered)} />
 
             <div className="mt-[var(--space-8)] rounded-[calc(var(--radius-lg)*1.15)] bg-olive-100 p-[clamp(18px,4vw,28px)]">
-              <h4 className="mb-[var(--space-2)] text-[20px] text-olive-900">
+              <h3 className="mb-[var(--space-2)] text-[20px] text-olive-900">
                 When the site has a strict CSP
-              </h4>
+              </h3>
               <p className="mb-[var(--space-3)] text-pretty text-[14.5px] text-olive-900 leading-[1.6]">
                 Both of the above fetch <code className="text-[13px]">check.js</code>, and
                 a strict <code className="text-[13px]">script-src</code> blocks that

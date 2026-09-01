@@ -38,7 +38,7 @@ export default function Home() {
 
       <section className="mt-[clamp(40px,7vw,60px)] flex flex-wrap items-center gap-[var(--space-4)] rounded-[calc(var(--radius-lg)*1.15)] bg-surface p-[clamp(18px,4vw,28px)]">
         <div className="min-w-[220px] flex-1">
-          <h4 className="mb-[var(--space-2)] text-[20px]">See it catch something</h4>
+          <h2 className="mb-[var(--space-2)] text-[20px]">See it catch something</h2>
           <p className="text-pretty text-[14.5px] text-neutral-800 leading-[1.6]">
             The demo page installs GA4 twice over and denies analytics consent. Run the
             bookmarklet there and it should report both. If it does not, the checker is
