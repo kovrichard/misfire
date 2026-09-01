@@ -1,3 +1,4 @@
+import { configuredIds } from "./datalayer";
 import type { ScriptTag, ToolKey } from "./types";
 
 export const TOOL_KEYS: ToolKey[] = [
@@ -9,6 +10,7 @@ export const TOOL_KEYS: ToolKey[] = [
   "vercel",
   "datafast",
   "umami",
+  "googleads",
   "meta",
   "hotjar",
 ];
@@ -24,6 +26,7 @@ export const TOOL_NAMES: Record<ToolKey, string> = {
   vercel: "Vercel Analytics",
   datafast: "Datafast",
   umami: "Umami",
+  googleads: "Google Ads",
   meta: "Meta Pixel",
   hotjar: "Hotjar",
 };
@@ -63,6 +66,10 @@ export interface ToolSpec {
   baseEvent?: string;
   debugTag?: RegExp;
   unit: string;
+}
+
+function googleAdsIds(dataLayer: unknown[]): string[] {
+  return configuredIds(dataLayer, "AW-");
 }
 
 function metaPixelIds(dataLayer: unknown[]): string[] {
@@ -117,6 +124,15 @@ export const TOOL_SPECS: ToolSpec[] = [
     global: "umami",
     idFromData: "websiteId",
     unit: "event",
+  },
+  {
+    key: "googleads",
+    name: "Google Ads",
+    tag: /googletagmanager\.com\/gtag\/js\?[^\s"']*?\bid=AW-[A-Z0-9]+/i,
+    beacon: /(googleadservices\.com|googleads\.g\.doubleclick\.net)\/pagead\//i,
+    idFromUrl: /[?&]id=(AW-[A-Z0-9]+)/i,
+    idFromDataLayer: googleAdsIds,
+    unit: "conversion",
   },
   {
     key: "meta",

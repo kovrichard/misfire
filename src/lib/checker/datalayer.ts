@@ -8,10 +8,14 @@ function gtagCalls(dataLayer: unknown[], command: string): unknown[][] {
   );
 }
 
-export function configuredMeasurementIds(dataLayer: unknown[]): string[] {
+export function configuredIds(dataLayer: unknown[], prefix: string): string[] {
   return gtagCalls(dataLayer, "config")
     .map((entry) => entry[1])
-    .filter((id): id is string => typeof id === "string" && id.startsWith("G-"));
+    .filter((id): id is string => typeof id === "string" && id.startsWith(prefix));
+}
+
+export function configuredMeasurementIds(dataLayer: unknown[]): string[] {
+  return configuredIds(dataLayer, "G-");
 }
 
 export function hasGtmInit(dataLayer: unknown[]): boolean {

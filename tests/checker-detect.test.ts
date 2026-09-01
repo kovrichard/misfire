@@ -646,3 +646,90 @@ describe("analyze — Umami self-hosted under the default filename", () => {
     expect(names).not.toContain("Umami");
   });
 });
+
+const ADS_JS = "https://www.googletagmanager.com/gtag/js?id=AW-987654321";
+const ADS_HIT = "https://www.googleadservices.com/pagead/conversion/987654321/?label=abc";
+
+describe("analyze — Google Ads", () => {
+  it("reads the conversion id from the gtag request", () => {
+    const report = analyze(
+      snap({
+        resources: [ADS_JS, ADS_HIT],
+        scripts: [tag(ADS_JS)],
+        dataLayer: [["config", "AW-987654321"]],
+      })
+    );
+    const ads = toolOf(report, "Google Ads");
+    expect(ads.ids).toEqual(["AW-987654321"]);
+    expect(ads.hits).toBe(1);
+    expect(ads.unit).toBe("conversion");
+  });
+
+  it("counts a viewthrough conversion as a hit", () => {
+    const report = analyze(
+      snap({
+        resources: [
+          ADS_JS,
+          "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/987654321/",
+        ],
+        scripts: [tag(ADS_JS)],
+      })
+    );
+    expect(toolOf(report, "Google Ads").hits).toBe(1);
+  });
+
+  it("warns when the tag is present but no conversion fired", () => {
+    const report = analyze(snap({ resources: [ADS_JS], scripts: [tag(ADS_JS)] }));
+    expect(titles(report, "Google Ads")).toContain("Nothing sent yet");
+  });
+
+  it("errors when picked but absent", () => {
+    expect(titles(analyze(snap(), ["googleads"]), "Google Ads")).toContain(
+      "No Google Ads tag found"
+    );
+  });
+});
+
+describe("analyze — Google Ads and GA4 do not claim each other", () => {
+  const names = (report: Report) => report.tools.map((tool) => tool.tool);
+
+  it("an Ads-only page reports no GA4", () => {
+    const found = names(
+      analyze(snap({ resources: [ADS_JS, ADS_HIT], scripts: [tag(ADS_JS)] }), [
+        "googleads",
+      ])
+    );
+    expect(found).toEqual(["Google Ads"]);
+  });
+
+  it("a GA4-only page reports no Google Ads", () => {
+    const found = names(
+      analyze(
+        snap({
+          resources: [GTAG_URL, GA_HIT],
+          scripts: [tag(GTAG_URL)],
+          dataLayer: [["config", "G-8FQ2M1BZDR"]],
+          globals: ["gtag"],
+        })
+      )
+    );
+    expect(found).not.toContain("Google Ads");
+    expect(found).toContain("GA4");
+  });
+
+  it("a page running both keeps their ids apart", () => {
+    const report = analyze(
+      snap({
+        resources: [GTAG_URL, GA_HIT, ADS_JS, ADS_HIT],
+        scripts: [tag(GTAG_URL), tag(ADS_JS)],
+        dataLayer: [
+          ["config", "G-8FQ2M1BZDR"],
+          ["config", "AW-987654321"],
+        ],
+        globals: ["gtag"],
+      })
+    );
+    expect(toolOf(report, "GA4").ids).toEqual(["G-8FQ2M1BZDR"]);
+    expect(toolOf(report, "Google Ads").ids).toEqual(["AW-987654321"]);
+  });
+});

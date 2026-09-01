@@ -9,6 +9,7 @@ export type ToolKey =
   | "vercel"
   | "datafast"
   | "umami"
+  | "googleads"
   | "meta"
   | "hotjar";
 

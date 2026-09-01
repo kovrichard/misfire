@@ -89,6 +89,16 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
   {
+    key: "googleads",
+    kicker: "Advertising",
+    name: "Google Ads",
+    items: [
+      "Conversion ID from the gtag request",
+      "The same ID configured twice",
+      "Loaded but no conversion sent",
+    ],
+  },
+  {
     key: "meta",
     kicker: "Advertising",
     name: "Meta Pixel",
