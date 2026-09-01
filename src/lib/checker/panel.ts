@@ -17,9 +17,10 @@ const SNAP_MS = 180;
 
 type Corner = (typeof CORNERS)[number][0];
 
-function nearestCorner(x: number, y: number): Corner {
-  const vertical = y < window.innerHeight / 2 ? "top" : "bottom";
-  const horizontal = x < window.innerWidth / 2 ? "left" : "right";
+function occupiedCorner(rect: DOMRect): Corner {
+  const vertical = rect.top + rect.height / 2 < window.innerHeight / 2 ? "top" : "bottom";
+  const horizontal =
+    rect.left + rect.width / 2 < window.innerWidth / 2 ? "left" : "right";
   return `${vertical}-${horizontal}` as Corner;
 }
 
@@ -235,10 +236,10 @@ export function mountPanel(onClose: () => void): Panel {
     card.style.top = `${event.clientY - grab.dy}px`;
   });
 
-  const release = (event: PointerEvent) => {
+  const release = () => {
     if (!grab) return;
     grab = null;
-    snapTo(nearestCorner(event.clientX, event.clientY));
+    snapTo(occupiedCorner(card.getBoundingClientRect()));
   };
 
   header.addEventListener("pointerup", release);
