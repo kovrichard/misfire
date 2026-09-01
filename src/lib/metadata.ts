@@ -9,6 +9,7 @@ export const metaTitle = "Misfire: find the analytics tags that never fire";
 export const metaDescription =
   "A bookmarklet that runs inside your page and reports whether Google Analytics, Tag Manager and Clarity are really installed, and really sending data.";
 export const siteUrl = "https://misfire.konvert7.com";
+export const repoUrl = "https://github.com/kovrichard/misfire";
 
 export const openGraph: Metadata["openGraph"] = {
   title: metaTitle,
