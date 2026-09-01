@@ -112,6 +112,15 @@ export default function Home() {
             </div>
           ))}
         </div>
+        <p className="max-w-3xl text-muted-foreground text-sm">
+          Also detected, but only listed when they are actually on the page:{" "}
+          <span className={mono.className}>
+            Plausible, PostHog, Vercel Analytics, Meta Pixel, Hotjar
+          </span>
+          . And the consent platform — OneTrust, Cookiebot, Osano, CookieYes or a bare TCF
+          framework — so a tag that loaded but sent nothing names what is holding it
+          instead of shrugging at you.
+        </p>
       </section>
 
       <section className="flex max-w-2xl flex-col gap-3">

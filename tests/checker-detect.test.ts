@@ -1,11 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { analyze } from "../src/lib/checker/detect";
-import {
-  emptySnapshot,
-  type Report,
-  type Snapshot,
-  type ToolName,
-} from "../src/lib/checker/types";
+import { emptySnapshot, type Report, type Snapshot } from "../src/lib/checker/types";
 
 const GTM_URL = "https://www.googletagmanager.com/gtm.js?id=GTM-WX9K2LP";
 const GTAG_URL = "https://www.googletagmanager.com/gtag/js?id=G-8FQ2M1BZDR";
@@ -18,28 +13,31 @@ function snap(overrides: Partial<Snapshot> = {}): Snapshot {
   return { ...emptySnapshot("https://acme.test/"), ...overrides };
 }
 
+function tag(src: string, data: Record<string, string> = {}) {
+  return { src, data };
+}
+
 function healthy(): Snapshot {
   return snap({
     resources: [GTM_URL, GTAG_URL, GA_HIT, CLARITY_URL, CLARITY_HIT],
-    scriptSrcs: [GTM_URL, GTAG_URL, CLARITY_URL],
+    scripts: [GTM_URL, GTAG_URL, CLARITY_URL].map((src) => tag(src)),
     dataLayer: [
       { "gtm.start": 1, event: "gtm.js" },
       ["consent", "default", { analytics_storage: "granted" }],
       ["config", "G-8FQ2M1BZDR"],
     ],
     gtmContainers: ["GTM-WX9K2LP"],
-    hasGtag: true,
-    hasClarity: true,
+    globals: ["gtag", "clarity", "google_tag_manager"],
   });
 }
 
-function toolOf(report: Report, tool: ToolName) {
+function toolOf(report: Report, tool: string) {
   const found = report.tools.find((entry) => entry.tool === tool);
   if (!found) throw new Error(`no report for ${tool}`);
   return found;
 }
 
-function titles(report: Report, tool: ToolName): string[] {
+function titles(report: Report, tool: string): string[] {
   return toolOf(report, tool).findings.map((finding) => finding.title);
 }
 
@@ -137,7 +135,12 @@ describe("analyze — loaded versus fired", () => {
 
 describe("analyze — GTM health", () => {
   it("warns when the container loads but never initialises", () => {
-    const report = analyze({ ...healthy(), gtmContainers: [], dataLayer: [] });
+    const report = analyze({
+      ...healthy(),
+      gtmContainers: [],
+      dataLayer: [],
+      globals: ["gtag", "clarity"],
+    });
     expect(titles(report, "GTM")).toContain("Container loaded but never initialised");
   });
 
@@ -147,7 +150,7 @@ describe("analyze — GTM health", () => {
     const report = analyze({
       ...base,
       resources: [...base.resources, second],
-      scriptSrcs: [...base.scriptSrcs, second],
+      scripts: [...base.scripts, tag(second)],
       gtmContainers: ["GTM-WX9K2LP", "GTM-SECOND1"],
     });
     expect(titles(report, "GTM")).toContain("Multiple GTM containers");
@@ -171,5 +174,170 @@ describe("analyze — consent", () => {
   it("stays quiet when the page uses no consent mode", () => {
     const report = analyze(snap());
     expect(report.consent).toEqual([]);
+  });
+});
+
+const PLAUSIBLE_JS = "https://plausible.io/js/script.js";
+const PLAUSIBLE_HIT = "https://plausible.io/api/event";
+const POSTHOG_JS = "https://us-assets.i.posthog.com/static/array.js";
+const POSTHOG_HIT = "https://us.i.posthog.com/e/?ip=1";
+const VERCEL_JS = "https://acme.test/_vercel/insights/script.js";
+const VERCEL_HIT = "https://acme.test/_vercel/insights/view";
+const META_JS = "https://connect.facebook.net/en_US/fbevents.js";
+const META_HIT = "https://www.facebook.com/tr/?id=8891234&ev=PageView";
+const HOTJAR_JS = "https://static.hotjar.com/c/hotjar-3456789.js";
+const HOTJAR_HIT = "https://metrics.hotjar.io/api/v2/client/sites/3456789/hit";
+
+describe("analyze — tools that are not installed", () => {
+  it("does not add a row for a tool the page never used", () => {
+    const names = analyze(healthy()).tools.map((tool) => tool.tool);
+    expect(names).toEqual(["GTM", "GA4", "Clarity"]);
+  });
+});
+
+describe("analyze — Plausible", () => {
+  it("reads the site from data-domain and counts events", () => {
+    const report = analyze(
+      snap({
+        resources: [PLAUSIBLE_JS, PLAUSIBLE_HIT],
+        scripts: [tag(PLAUSIBLE_JS, { domain: "acme.com" })],
+        globals: ["plausible"],
+      })
+    );
+    const plausible = toolOf(report, "Plausible");
+    expect(plausible.ids).toEqual(["acme.com"]);
+    expect(plausible.hits).toBe(1);
+    expect(plausible.level).toBe("ok");
+  });
+
+  it("errors when the script is in the page but never loaded", () => {
+    const report = analyze(
+      snap({ scripts: [tag(PLAUSIBLE_JS, { domain: "acme.com" })] })
+    );
+    expect(titles(report, "Plausible")).toContain("Tag script never loaded");
+  });
+
+  it("warns when it loaded but window.plausible never appeared", () => {
+    const report = analyze(
+      snap({ resources: [PLAUSIBLE_JS, PLAUSIBLE_HIT], scripts: [tag(PLAUSIBLE_JS)] })
+    );
+    expect(titles(report, "Plausible")).toContain(
+      "Script loaded but window.plausible is missing"
+    );
+  });
+});
+
+describe("analyze — PostHog, Vercel and Hotjar", () => {
+  it("detects PostHog and its capture endpoint", () => {
+    const report = analyze(
+      snap({ resources: [POSTHOG_JS, POSTHOG_HIT], globals: ["posthog"] })
+    );
+    expect(toolOf(report, "PostHog").hits).toBe(1);
+    expect(toolOf(report, "PostHog").level).toBe("ok");
+  });
+
+  it("detects Vercel Analytics on its same-origin path", () => {
+    const report = analyze(snap({ resources: [VERCEL_JS, VERCEL_HIT], globals: ["va"] }));
+    expect(toolOf(report, "Vercel Analytics").hits).toBe(1);
+  });
+
+  it("reads the Hotjar site id out of the script url", () => {
+    const report = analyze(snap({ resources: [HOTJAR_JS, HOTJAR_HIT], globals: ["hj"] }));
+    expect(toolOf(report, "Hotjar").ids).toEqual(["3456789"]);
+    expect(toolOf(report, "Hotjar").unit).toBe("upload");
+  });
+});
+
+describe("analyze — Meta Pixel", () => {
+  it("reads the pixel id from the fbq init queue", () => {
+    const report = analyze(
+      snap({
+        resources: [META_JS, META_HIT],
+        dataLayer: [["init", "8891234"]],
+        globals: ["fbq"],
+      })
+    );
+    expect(toolOf(report, "Meta Pixel").ids).toEqual(["8891234"]);
+  });
+
+  it("errors when the same pixel is initialised twice", () => {
+    const report = analyze(
+      snap({
+        resources: [META_JS, META_HIT],
+        dataLayer: [
+          ["init", "8891234"],
+          ["init", "8891234"],
+        ],
+        globals: ["fbq"],
+      })
+    );
+    expect(titles(report, "Meta Pixel")).toContain("Initialised twice");
+    expect(toolOf(report, "Meta Pixel").level).toBe("error");
+  });
+});
+
+describe("analyze — consent platforms explain the silence", () => {
+  const silent = () => {
+    const base = healthy();
+    return { ...base, resources: base.resources.filter((url) => url !== GA_HIT) };
+  };
+
+  it("names the CMP instead of shrugging", () => {
+    const base = silent();
+    const report = analyze({
+      ...base,
+      resources: [
+        ...base.resources,
+        "https://cdn.cookielaw.org/scripttemplates/otSDKStub.js",
+      ],
+      globals: [...base.globals, "OneTrust"],
+    });
+    const finding = toolOf(report, "GA4").findings.find(
+      (f) => f.title === "No hit recorded yet"
+    );
+    expect(finding?.detail).toContain("OneTrust");
+  });
+
+  it("falls back to a generic reason when no CMP is present", () => {
+    const finding = analyze(silent())
+      .tools.find((tool) => tool.tool === "GA4")
+      ?.findings.find((f) => f.title === "No hit recorded yet");
+    expect(finding?.detail).toContain("Consent, a blocker, or a misconfigured ID");
+  });
+
+  it("prefers denied Consent Mode over naming the CMP", () => {
+    const base = silent();
+    const report = analyze({
+      ...base,
+      dataLayer: [
+        ...base.dataLayer,
+        ["consent", "update", { analytics_storage: "denied" }],
+      ],
+      globals: [...base.globals, "Cookiebot"],
+    });
+    const finding = toolOf(report, "GA4").findings.find(
+      (f) => f.title === "No hit recorded yet"
+    );
+    expect(finding?.detail).toContain("analytics_storage denied");
+  });
+
+  it("recognises a bare TCF framework", () => {
+    const base = silent();
+    const report = analyze({ ...base, globals: [...base.globals, "__tcfapi"] });
+    const finding = toolOf(report, "GA4").findings.find(
+      (f) => f.title === "No hit recorded yet"
+    );
+    expect(finding?.detail).toContain("TCF");
+  });
+});
+
+describe("analyze — unit labels", () => {
+  it("keeps Clarity's unit on the not-installed path", () => {
+    expect(toolOf(analyze(snap()), "Clarity").unit).toBe("upload");
+  });
+
+  it("gives GTM no unit, since it has no beacon of its own", () => {
+    expect(toolOf(analyze(snap()), "GTM").unit).toBe("");
+    expect(toolOf(analyze(healthy()), "GTM").unit).toBe("");
   });
 });

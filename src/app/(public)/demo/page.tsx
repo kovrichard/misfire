@@ -16,11 +16,18 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-DEM0BR0KEN');
 gtag('config', 'G-DEM0BR0KEN');
-gtag('consent', 'default', { analytics_storage: 'denied' });`;
+gtag('consent', 'default', { analytics_storage: 'denied' });
+
+!function(f){if(f.fbq)return;var n=f.fbq=function(){n.queue.push(arguments)};
+f._fbq=n;n.queue=[];}(window);
+fbq('init', '8891234567890');
+fbq('init', '8891234567890');`;
 
 const EXPECTED = [
   "GA4 — Measured twice: G-DEM0BR0KEN configured 2x",
-  "GA4 — No hit recorded yet",
+  "GA4 — No hit recorded yet, blamed on denied Consent Mode",
+  "Meta Pixel — Initialised twice: 8891234567890 set up 2x",
+  "Meta Pixel — Nothing sent yet",
   "Consent — analytics_storage is denied",
   "GTM — No GTM container found",
   "Clarity — No Clarity tag found",
@@ -39,10 +46,12 @@ export default function Demo() {
           A deliberately broken install
         </h1>
         <p className="text-muted-foreground">
-          This page configures the same GA4 property twice and denies analytics consent.
-          Nothing here talks to Google — the duplicate lives in{" "}
-          <code className={cn(mono.className, "text-foreground")}>dataLayer</code>, which
-          is exactly where the checker reads it from. Run the bookmarklet now.
+          This page configures the same GA4 property twice, initialises the same Meta
+          pixel twice, and denies analytics consent. Nothing here talks to Google or Meta
+          — the duplicates live in{" "}
+          <code className={cn(mono.className, "text-foreground")}>dataLayer</code> and the{" "}
+          <code className={cn(mono.className, "text-foreground")}>fbq</code> queue, which
+          is exactly where the checker reads them from. Run the bookmarklet now.
         </p>
       </section>
 

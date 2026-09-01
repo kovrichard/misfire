@@ -1,15 +1,17 @@
 export type Level = "ok" | "warn" | "error";
 
-export type ToolName = "GTM" | "GA4" | "Clarity";
+export interface ScriptTag {
+  src: string;
+  data: Record<string, string>;
+}
 
 export interface Snapshot {
   href: string;
   resources: string[];
-  scriptSrcs: string[];
+  scripts: ScriptTag[];
   dataLayer: unknown[];
   gtmContainers: string[];
-  hasGtag: boolean;
-  hasClarity: boolean;
+  globals: string[];
 }
 
 export interface Finding {
@@ -19,10 +21,11 @@ export interface Finding {
 }
 
 export interface ToolReport {
-  tool: ToolName;
+  tool: string;
   level: Level;
   ids: string[];
   hits: number;
+  unit: string;
   findings: Finding[];
 }
 
@@ -37,10 +40,17 @@ export function emptySnapshot(href = ""): Snapshot {
   return {
     href,
     resources: [],
-    scriptSrcs: [],
+    scripts: [],
     dataLayer: [],
     gtmContainers: [],
-    hasGtag: false,
-    hasClarity: false,
+    globals: [],
   };
+}
+
+export function scriptSrcs(snapshot: Snapshot): string[] {
+  return snapshot.scripts.map((script) => script.src);
+}
+
+export function hasGlobal(snapshot: Snapshot, name: string): boolean {
+  return snapshot.globals.includes(name);
 }

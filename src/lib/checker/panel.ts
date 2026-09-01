@@ -21,8 +21,8 @@ button {
 button:hover { color: #e6edf3; border-color: #8b949e; }
 .url { padding: 8px 12px; color: #8b949e; font-size: 11px; word-break: break-all; border-bottom: 1px solid #21262d; }
 .tool { padding: 10px 12px; border-bottom: 1px solid #21262d; }
-.tool-head { display: flex; align-items: baseline; gap: 8px; }
-.name { font-weight: 600; min-width: 58px; }
+.tool-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.name { font-weight: 600; min-width: 58px; flex: none; }
 .ids { color: #58a6ff; word-break: break-all; flex: 1; }
 .hits { color: #8b949e; font-size: 11px; white-space: nowrap; }
 .finding { display: flex; gap: 8px; margin-top: 6px; }
@@ -58,9 +58,8 @@ function renderFinding(finding: Finding): HTMLElement {
 }
 
 function hitLabel(tool: ToolReport): string {
-  if (tool.tool === "GTM") return "";
-  const noun = tool.tool === "Clarity" ? "upload" : "hit";
-  return tool.hits === 1 ? `1 ${noun}` : `${tool.hits} ${noun}s`;
+  if (!tool.unit) return "";
+  return tool.hits === 1 ? `1 ${tool.unit}` : `${tool.hits} ${tool.unit}s`;
 }
 
 function renderTool(tool: ToolReport): HTMLElement {

@@ -12,7 +12,16 @@ import {
   tally,
   unique,
 } from "./patterns";
-import type { Finding, Level, Report, Snapshot, ToolName, ToolReport } from "./types";
+import { CMP_SPECS, idsFromScripts, TOOL_SPECS, type ToolSpec } from "./registry";
+import {
+  type Finding,
+  hasGlobal,
+  type Level,
+  type Report,
+  type Snapshot,
+  scriptSrcs,
+  type ToolReport,
+} from "./types";
 
 const ok = (title: string, detail: string): Finding => ({ level: "ok", title, detail });
 const warn = (title: string, detail: string): Finding => ({
@@ -36,18 +45,23 @@ function worst(findings: Finding[]): Level {
 }
 
 function report(
-  tool: ToolName,
+  tool: string,
   ids: string[],
   hits: number,
-  findings: Finding[]
+  findings: Finding[],
+  unit = "hit"
 ): ToolReport {
-  return { tool, ids, hits, findings, level: worst(findings) };
+  return { tool, ids, hits, unit, findings, level: worst(findings) };
+}
+
+function plural(count: number, unit: string): string {
+  return count === 1 ? `1 ${unit}` : `${count} ${unit}s`;
 }
 
 function detectGtm(snapshot: Snapshot): ToolReport {
   const loaded = captureAll(snapshot.resources, GTM_SCRIPT);
   const framed = captureAll(snapshot.resources, GTM_FRAME);
-  const declared = captureAll(snapshot.scriptSrcs, GTM_SCRIPT);
+  const declared = captureAll(scriptSrcs(snapshot), GTM_SCRIPT);
   const ids = unique([...loaded, ...framed, ...snapshot.gtmContainers, ...declared]);
   const findings: Finding[] = [];
 
@@ -55,7 +69,7 @@ function detectGtm(snapshot: Snapshot): ToolReport {
     findings.push(
       bad("No GTM container found", "No gtm.js request and no window.google_tag_manager.")
     );
-    return report("GTM", ids, 0, findings);
+    return report("GTM", ids, 0, findings, "");
   }
 
   const blocked = declared.filter((id) => !loaded.includes(id));
@@ -102,12 +116,12 @@ function detectGtm(snapshot: Snapshot): ToolReport {
     findings.push(ok("Container live", `${ids.join(", ")} loaded and initialised.`));
   }
 
-  return report("GTM", ids, 0, findings);
+  return report("GTM", ids, 0, findings, "");
 }
 
-function detectGa4(snapshot: Snapshot): ToolReport {
+function detectGa4(snapshot: Snapshot, blocker: string | null): ToolReport {
   const loads = captureAll(snapshot.resources, GTAG_SCRIPT);
-  const declared = captureAll(snapshot.scriptSrcs, GTAG_SCRIPT);
+  const declared = captureAll(scriptSrcs(snapshot), GTAG_SCRIPT);
   const configs = configuredMeasurementIds(snapshot.dataLayer);
   const beacons = matching(snapshot.resources, GA_COLLECT);
   const measured = beacons
@@ -155,12 +169,7 @@ function detectGa4(snapshot: Snapshot): ToolReport {
   }
 
   if (beacons.length === 0) {
-    findings.push(
-      warn(
-        "No hit recorded yet",
-        "The tag is present but has not sent anything to Google. Consent, a blocker, or a misconfigured ID."
-      )
-    );
+    findings.push(warn("No hit recorded yet", noHitDetail("Google", blocker)));
   } else {
     const silent = ids.filter((id) => !measured.includes(id));
     if (silent.length > 0) {
@@ -172,25 +181,25 @@ function detectGa4(snapshot: Snapshot): ToolReport {
 
   if (findings.length === 0) {
     findings.push(
-      ok("Sending data", `${ids.join(", ")} — ${beacons.length} hit(s) observed.`)
+      ok("Sending data", `${ids.join(", ")} — ${plural(beacons.length, "hit")} observed.`)
     );
   }
 
   return report("GA4", ids, beacons.length, findings);
 }
 
-function detectClarity(snapshot: Snapshot): ToolReport {
+function detectClarity(snapshot: Snapshot, blocker: string | null): ToolReport {
   const loaded = captureAll(snapshot.resources, CLARITY_TAG);
-  const declared = captureAll(snapshot.scriptSrcs, CLARITY_TAG);
+  const declared = captureAll(scriptSrcs(snapshot), CLARITY_TAG);
   const beacons = matching(snapshot.resources, CLARITY_COLLECT);
   const ids = unique([...loaded, ...declared]);
   const findings: Finding[] = [];
 
-  if (ids.length === 0 && !snapshot.hasClarity) {
+  if (ids.length === 0 && !hasGlobal(snapshot, "clarity")) {
     findings.push(
       bad("No Clarity tag found", "No clarity.ms/tag request and no window.clarity.")
     );
-    return report("Clarity", ids, 0, findings);
+    return report("Clarity", ids, 0, findings, "upload");
   }
 
   const blocked = declared.filter((id) => !loaded.includes(id));
@@ -209,28 +218,111 @@ function detectClarity(snapshot: Snapshot): ToolReport {
     );
   }
 
-  if (!snapshot.hasClarity) {
+  if (!hasGlobal(snapshot, "clarity")) {
     findings.push(
       warn("Script loaded but window.clarity is missing", "The tag ran but never booted.")
     );
   }
 
   if (beacons.length === 0) {
-    findings.push(
-      warn(
-        "No session data sent yet",
-        "Clarity is present but has not posted to clarity.ms/collect."
-      )
-    );
+    findings.push(warn("No session data sent yet", noHitDetail("clarity.ms", blocker)));
   }
 
   if (findings.length === 0) {
     findings.push(
-      ok("Recording", `${ids.join(", ")} — ${beacons.length} upload(s) observed.`)
+      ok("Recording", `${ids.join(", ")} — ${plural(beacons.length, "upload")} observed.`)
     );
   }
 
-  return report("Clarity", ids, beacons.length, findings);
+  return report("Clarity", ids, beacons.length, findings, "upload");
+}
+
+function noHitDetail(destination: string, blocker: string | null): string {
+  if (blocker) return `${blocker}, which would explain the silence.`;
+  return `The tag is present but has sent nothing to ${destination}. Consent, a blocker, or a misconfigured ID.`;
+}
+
+function detectedCmp(snapshot: Snapshot): string | null {
+  const srcs = scriptSrcs(snapshot);
+  const found = CMP_SPECS.find(
+    (cmp) =>
+      hasGlobal(snapshot, cmp.global) ||
+      snapshot.resources.some((url) => cmp.tag.test(url)) ||
+      srcs.some((url) => cmp.tag.test(url))
+  );
+  if (found) return `${found.name} is managing consent on this page`;
+  if (hasGlobal(snapshot, "__tcfapi")) return "A TCF consent framework is running here";
+  return null;
+}
+
+function blockerOf(snapshot: Snapshot): string | null {
+  const state = consentState(snapshot.dataLayer);
+  if (state.analytics_storage === "denied") {
+    return "Consent Mode still has analytics_storage denied";
+  }
+  return detectedCmp(snapshot);
+}
+
+function specIds(spec: ToolSpec, snapshot: Snapshot, urls: string[]): string[] {
+  const fromUrl = spec.idFromUrl ? captureAll(urls, spec.idFromUrl) : [];
+  const fromData = idsFromScripts(snapshot.scripts, spec);
+  const fromLayer = spec.idFromDataLayer ? spec.idFromDataLayer(snapshot.dataLayer) : [];
+  return [...fromUrl, ...fromData, ...fromLayer];
+}
+
+function detectSpec(
+  spec: ToolSpec,
+  snapshot: Snapshot,
+  blocker: string | null
+): ToolReport | null {
+  const loaded = matching(snapshot.resources, spec.tag);
+  const declared = matching(scriptSrcs(snapshot), spec.tag);
+  const booted = spec.global ? hasGlobal(snapshot, spec.global) : false;
+  if (loaded.length === 0 && declared.length === 0 && !booted) return null;
+
+  const allIds = specIds(spec, snapshot, [...loaded, ...declared]);
+  const ids = unique(allIds);
+  const beacons = spec.beacon ? matching(snapshot.resources, spec.beacon) : [];
+  const findings: Finding[] = [];
+
+  if (loaded.length === 0 && declared.length > 0) {
+    findings.push(
+      bad(
+        "Tag script never loaded",
+        "The script is in the page but made no request — blocked by CSP, an extension, or a 404."
+      )
+    );
+  }
+
+  for (const [id, count] of tally(allIds)) {
+    if (count > 1) {
+      findings.push(
+        bad("Initialised twice", `${id} was set up ${count}x — events will be doubled.`)
+      );
+    }
+  }
+
+  if (spec.global && !booted && loaded.length > 0) {
+    findings.push(
+      warn(
+        `Script loaded but window.${spec.global} is missing`,
+        "The tag ran but never booted."
+      )
+    );
+  }
+
+  if (spec.beacon && beacons.length === 0) {
+    findings.push(warn("Nothing sent yet", noHitDetail(spec.name, blocker)));
+  }
+
+  if (findings.length === 0) {
+    const label = ids.length > 0 ? ids.join(", ") : "installed";
+    findings.push(
+      ok("Sending data", `${label} — ${plural(beacons.length, spec.unit)} observed.`)
+    );
+  }
+
+  return report(spec.name, ids, beacons.length, findings, spec.unit);
 }
 
 function detectConsent(snapshot: Snapshot): Finding[] {
@@ -256,7 +348,16 @@ function detectConsent(snapshot: Snapshot): Finding[] {
 }
 
 export function analyze(snapshot: Snapshot): Report {
-  const tools = [detectGtm(snapshot), detectGa4(snapshot), detectClarity(snapshot)];
+  const blocker = blockerOf(snapshot);
+  const core = [
+    detectGtm(snapshot),
+    detectGa4(snapshot, blocker),
+    detectClarity(snapshot, blocker),
+  ];
+  const extra = TOOL_SPECS.map((spec) => detectSpec(spec, snapshot, blocker)).filter(
+    (found): found is ToolReport => found !== null
+  );
+  const tools = [...core, ...extra];
   const consent = detectConsent(snapshot);
   const level = worst([...tools.flatMap((tool) => tool.findings), ...consent]);
   return { href: snapshot.href, tools, consent, level };
