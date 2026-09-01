@@ -36,6 +36,8 @@ void mock.module("server-only", () => ({}));
 // trap reports no exports at all — list the fonts this repo actually imports.
 const mockFontLoader = () => ({ className: "mock-font", variable: "--font-mock" });
 void mock.module("next/font/google", () => ({
+  Caprasimo: mockFontLoader,
+  Figtree: mockFontLoader,
   Inter: mockFontLoader,
   JetBrains_Mono: mockFontLoader,
 }));

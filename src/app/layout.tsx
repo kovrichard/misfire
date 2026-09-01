@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import type React from "react";
 import Analytics from "@/components/analytics";
@@ -8,6 +7,7 @@ import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import conf from "@/lib/config";
 import { PublicConfigProvider } from "@/lib/contexts/public-config-context";
+import { body, heading } from "@/lib/fonts";
 import {
   metaDescription,
   metaTitle,
@@ -17,8 +17,6 @@ import {
 } from "@/lib/metadata";
 import publicConf from "@/lib/public-config";
 import { cn } from "@/lib/utils";
-
-const inter = Inter({ subsets: ["latin"] });
 
 // Without resizes-content the layout viewport ignores the on-screen keyboard, so
 // bottom-anchored sheets keep their full height behind it and push their fields
@@ -63,7 +61,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className="dark scroll-smooth"
+      className={cn(heading.variable, body.variable, "scroll-smooth")}
       data-scroll-behavior="smooth"
     >
       <head>
@@ -75,9 +73,7 @@ export default function RootLayout({
           clarityId={publicConf.clarityId}
         />
       </head>
-      <body
-        className={cn(inter.className, "flex min-h-svh min-w-80 flex-col justify-center")}
-      >
+      <body className="flex min-h-svh min-w-80 flex-col justify-center">
         {process.env.NODE_ENV === "development" && process.env.REACT_SCAN === "true" && (
           <script
             src="https://unpkg.com/react-scan/dist/auto.global.js"

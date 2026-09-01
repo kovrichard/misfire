@@ -1,7 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
-import CatalystBadge from "@/components/footer/catalyst-badge";
 import { JsonLd, organizationLd, webSiteLd } from "@/components/marketing/json-ld";
 
 export default function Layout({
@@ -10,21 +8,34 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex w-full flex-1 flex-col">
+    <div className="flex min-h-svh w-full flex-1 flex-col">
       <JsonLd data={organizationLd()} />
       <JsonLd data={webSiteLd()} />
-      <header className="container flex w-full items-center justify-end gap-4 py-4">
+
+      <nav className="flex w-full items-center gap-[var(--space-4)] px-[clamp(16px,4vw,44px)] py-[var(--space-3)]">
         <Link
           href="/"
-          className="mr-auto flex items-center gap-2 whitespace-pre font-medium text-lg"
+          className="mr-auto inline-flex items-center gap-[10px] font-heading text-[18px] no-underline"
         >
-          <Image src="/icon.svg" alt="analytics-check" width={30} height={30} />
+          <span className="inline-flex size-[30px] shrink-0 items-center justify-center rounded-full bg-brand text-[15px] text-canvas">
+            ✓
+          </span>
           analytics-check
         </Link>
-      </header>
+        <Link href="/demo" className="text-[14px] no-underline hover:text-brand">
+          Demo
+        </Link>
+      </nav>
+
       {children}
-      <footer className="container flex w-full justify-start py-4">
-        <CatalystBadge />
+
+      <footer className="flex justify-center px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-8)]">
+        <a
+          href="https://catalyst.konvert7.com/"
+          className="text-[13px] text-neutral-600 no-underline hover:text-brand-700"
+        >
+          Made with Catalyst
+        </a>
       </footer>
     </div>
   );

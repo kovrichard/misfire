@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { mono } from "@/components/marketing/fonts";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Deliberately broken install — analytics-check",
@@ -49,9 +47,9 @@ export default function Demo() {
           This page configures the same GA4 property twice, initialises the same Meta
           pixel twice, and denies analytics consent. Nothing here talks to Google or Meta
           — the duplicates live in{" "}
-          <code className={cn(mono.className, "text-foreground")}>dataLayer</code> and the{" "}
-          <code className={cn(mono.className, "text-foreground")}>fbq</code> queue, which
-          is exactly where the checker reads them from. Run the bookmarklet now.
+          <code className="font-mono text-foreground">dataLayer</code> and the{" "}
+          <code className="font-mono text-foreground">fbq</code> queue, which is exactly
+          where the checker reads them from. Run the bookmarklet now.
         </p>
       </section>
 
@@ -66,7 +64,7 @@ export default function Demo() {
         <h2 className="font-semibold text-xl tracking-tight">What you should see</h2>
         <ul className="flex flex-col gap-2 text-muted-foreground text-sm">
           {EXPECTED.map((line) => (
-            <li key={line} className={mono.className}>
+            <li key={line} className="font-mono">
               {line}
             </li>
           ))}
