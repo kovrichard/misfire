@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { openGraph } from "@/lib/metadata";
+import { openGraph, siteUrl } from "@/lib/metadata";
 
 const path = "/privacy-policy";
 const title = "Privacy Policy | Misfire";
@@ -24,7 +24,7 @@ export default function PrivacyPolicy() {
   return (
     <main className="container my-8 max-w-6xl space-y-4">
       <h1 className="font-semibold text-4xl">Privacy Policy</h1>
-      <p className="text-muted-foreground">Last updated: May 18, 2025</p>
+      <p className="text-muted-foreground">Last updated: September 1, 2026</p>
       <p>
         This Privacy Policy describes Our policies and procedures on the collection, use
         and disclosure of Your information when You use the Service and tells You about
@@ -57,8 +57,7 @@ export default function PrivacyPolicy() {
           <p>
             <strong>Company</strong> (referred to as either &quot;the Company&quot;,
             &quot;We&quot;, &quot;Us&quot; or &quot;Our&quot; in this Agreement) refers to
-            {/* TODO: change to the actual company */}
-            Catalyst.
+            Misfire.
           </p>
         </li>
         <li>
@@ -108,17 +107,14 @@ export default function PrivacyPolicy() {
         </li>
         <li>
           <p>
-            {/* TODO: change to the actual website */}
-            <strong>Website</strong> refers to Catalyst, accessible from{" "}
-            {/* TODO: change to the actual website */}
+            <strong>Website</strong> refers to Misfire, accessible from{" "}
             <a
-              href="https://catalyst.konvert7.com"
+              href={siteUrl}
               rel="external nofollow noopener"
               target="_blank"
               className="text-primary underline"
             >
-              {/* TODO: change to the actual website */}
-              https://catalyst.konvert7.com
+              {siteUrl}
             </a>
           </p>
         </li>
