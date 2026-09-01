@@ -4,11 +4,20 @@ const PANEL_HOST_ID = "misfire-panel";
 
 const GLYPH: Record<Level, string> = { ok: "✓", warn: "!", error: "✕" };
 
+const CORNERS = [
+  ["top-left", "Top left"],
+  ["top-right", "Top right"],
+  ["bottom-left", "Bottom left"],
+  ["bottom-right", "Bottom right"],
+] as const;
+
+const DEFAULT_CORNER = "bottom-right";
+
 const STYLE = `
 :host { all: initial; }
 .card {
-  position: fixed; right: 16px; bottom: 16px; width: 360px; max-width: calc(100vw - 32px);
-  max-height: calc(100vh - 32px); overflow: hidden; z-index: 2147483647;
+  position: fixed; width: 360px; max-width: calc(100vw - 32px);
+  max-height: 60vh; overflow: hidden; z-index: 2147483647;
   display: flex; flex-direction: column;
   background: #0d1117; color: #e6edf3; border: 1px solid #30363d; border-radius: 10px;
   box-shadow: 0 12px 40px rgba(0,0,0,.5); font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -20,6 +29,16 @@ button {
   color: #8b949e; border: 1px solid #30363d;
 }
 button:hover { color: #e6edf3; border-color: #8b949e; }
+.card[data-corner="top-left"] { top: 16px; left: 16px; }
+.card[data-corner="top-right"] { top: 16px; right: 16px; }
+.card[data-corner="bottom-left"] { bottom: 16px; left: 16px; }
+.card[data-corner="bottom-right"] { bottom: 16px; right: 16px; }
+.settings { padding: 8px 12px; border-bottom: 1px solid #21262d; flex: none; display: flex; align-items: center; gap: 8px; }
+.settings label { color: #8b949e; font-size: 11px; }
+.settings select {
+  all: unset; flex: 1; cursor: pointer; padding: 3px 6px; border-radius: 5px;
+  font: inherit; font-size: 11px; color: #e6edf3; border: 1px solid #30363d; background: #161b22;
+}
 .url { padding: 8px 12px; color: #8b949e; font-size: 11px; word-break: break-all; border-bottom: 1px solid #21262d; flex: none; }
 .scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
 .tool { padding: 10px 12px; border-bottom: 1px solid #21262d; }
@@ -102,19 +121,44 @@ export function mountPanel(onClose: () => void): Panel {
   style.textContent = STYLE;
 
   const card = el("div", "card");
+  card.dataset.corner = DEFAULT_CORNER;
+
   const header = el("header");
+  const gear = el("button", undefined, "⚙");
+  gear.title = "Settings";
   const close = el("button", undefined, "✕");
-  header.append(el("span", "brand", "Misfire"), close);
+  close.title = "Close";
+  header.append(el("span", "brand", "Misfire"), gear, close);
+
+  const settings = el("div", "settings");
+  settings.hidden = true;
+  const picker = el("select");
+  picker.setAttribute("aria-label", "Panel position");
+  for (const [value, label] of CORNERS) {
+    const option = el("option", undefined, label);
+    option.value = value;
+    picker.append(option);
+  }
+  picker.value = DEFAULT_CORNER;
+  settings.append(el("label", undefined, "Position"), picker);
 
   const url = el("div", "url");
   const body = el("div", "scroll");
-  card.append(header, url, body);
+  card.append(header, settings, url, body);
   root.append(style, card);
   document.body.append(host);
 
   close.addEventListener("click", () => {
     host.remove();
     onClose();
+  });
+
+  gear.addEventListener("click", () => {
+    settings.hidden = !settings.hidden;
+  });
+
+  picker.addEventListener("change", () => {
+    card.dataset.corner = picker.value;
   });
 
   let rendered = "";
