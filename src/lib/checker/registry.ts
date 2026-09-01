@@ -27,7 +27,7 @@ export const TOOL_NAMES: Record<ToolKey, string> = {
   plausible: "Plausible",
   posthog: "PostHog",
   vercel: "Vercel Analytics",
-  datafast: "Datafast",
+  datafast: "DataFast",
   umami: "Umami",
   googleads: "Google Ads",
   linkedin: "LinkedIn Insight",
@@ -132,7 +132,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     key: "datafast",
-    name: "Datafast",
+    name: "DataFast",
     tag: /datafa\.st\/js\/script[a-z.]*\.js/i,
     beacon: /datafa\.st\/api\/events/i,
     global: "datafast",

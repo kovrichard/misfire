@@ -447,7 +447,7 @@ describe("analyze — Vercel debug builds", () => {
 const DATAFAST_JS = "https://datafa.st/js/script.js";
 const DATAFAST_HIT = "https://datafa.st/api/events";
 
-describe("analyze — Datafast", () => {
+describe("analyze — DataFast", () => {
   it("reads the site from data-website-id and counts events", () => {
     const report = analyze(
       snap({
@@ -456,7 +456,7 @@ describe("analyze — Datafast", () => {
         globals: ["datafast"],
       })
     );
-    const datafast = toolOf(report, "Datafast");
+    const datafast = toolOf(report, "DataFast");
     expect(datafast.ids).toEqual(["68b5c1f0a2"]);
     expect(datafast.hits).toBe(1);
     expect(datafast.level).toBe("ok");
@@ -466,7 +466,7 @@ describe("analyze — Datafast", () => {
     const report = analyze(
       snap({ resources: [DATAFAST_JS, DATAFAST_HIT], scripts: [tag(DATAFAST_JS)] })
     );
-    expect(titles(report, "Datafast")).toContain(
+    expect(titles(report, "DataFast")).toContain(
       "Script loaded but window.datafast is missing"
     );
   });
@@ -479,21 +479,21 @@ describe("analyze — Datafast", () => {
         globals: ["datafast"],
       })
     );
-    expect(titles(report, "Datafast")).toContain("Nothing sent yet");
+    expect(titles(report, "DataFast")).toContain("Nothing sent yet");
   });
 
   it("stays silent when unpicked and absent", () => {
-    expect(analyze(snap()).tools.map((t) => t.tool)).not.toContain("Datafast");
+    expect(analyze(snap()).tools.map((t) => t.tool)).not.toContain("DataFast");
   });
 
   it("errors when picked but absent", () => {
     const report = analyze(snap(), ["datafast"]);
-    expect(titles(report, "Datafast")).toContain("No Datafast tag found");
+    expect(titles(report, "DataFast")).toContain("No DataFast tag found");
   });
 });
 
 describe("analyze — vendors with colliding script paths", () => {
-  it("does not report Plausible for a Datafast install", () => {
+  it("does not report Plausible for a DataFast install", () => {
     const names = analyze(
       snap({
         resources: [DATAFAST_JS, DATAFAST_HIT],
@@ -502,7 +502,7 @@ describe("analyze — vendors with colliding script paths", () => {
       })
     ).tools.map((tool) => tool.tool);
     expect(names).not.toContain("Plausible");
-    expect(names).toContain("Datafast");
+    expect(names).toContain("DataFast");
   });
 
   it("still recognises a proxied Plausible install", () => {
@@ -585,11 +585,11 @@ describe("analyze — the three data-website-id vendors stay apart", () => {
       )
     );
     expect(found).toContain("Umami");
-    expect(found).not.toContain("Datafast");
+    expect(found).not.toContain("DataFast");
     expect(found).not.toContain("Plausible");
   });
 
-  it("reports only Datafast for a Datafast install", () => {
+  it("reports only DataFast for a DataFast install", () => {
     const found = names(
       analyze(
         snap({
@@ -599,7 +599,7 @@ describe("analyze — the three data-website-id vendors stay apart", () => {
         })
       )
     );
-    expect(found).toContain("Datafast");
+    expect(found).toContain("DataFast");
     expect(found).not.toContain("Umami");
   });
 
@@ -616,7 +616,7 @@ describe("analyze — the three data-website-id vendors stay apart", () => {
     );
     expect(found).toContain("Plausible");
     expect(found).not.toContain("Umami");
-    expect(found).not.toContain("Datafast");
+    expect(found).not.toContain("DataFast");
   });
 });
 
