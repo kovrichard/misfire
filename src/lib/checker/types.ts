@@ -12,6 +12,7 @@ export type ToolKey =
   | "googleads"
   | "linkedin"
   | "cloudflare"
+  | "quora"
   | "meta"
   | "hotjar";
 

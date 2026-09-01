@@ -13,6 +13,7 @@ export const TOOL_KEYS: ToolKey[] = [
   "googleads",
   "linkedin",
   "cloudflare",
+  "quora",
   "meta",
   "hotjar",
 ];
@@ -31,6 +32,7 @@ export const TOOL_NAMES: Record<ToolKey, string> = {
   googleads: "Google Ads",
   linkedin: "LinkedIn Insight",
   cloudflare: "Cloudflare Web Analytics",
+  quora: "Quora Pixel",
   meta: "Meta Pixel",
   hotjar: "Hotjar",
 };
@@ -50,6 +52,7 @@ export const PROBED_GLOBALS = [
   "umami",
   "_linkedin_data_partner_id",
   "__cfBeacon",
+  "qp",
   "OneTrust",
   "OptanonActiveGroups",
   "Cookiebot",
@@ -172,6 +175,17 @@ export const TOOL_SPECS: ToolSpec[] = [
     idFromData: "cfBeacon",
     idTransform: cloudflareToken,
     unit: "beacon",
+  },
+  {
+    key: "quora",
+    name: "Quora Pixel",
+    tag: /a\.quora\.com\/qevents\.js/i,
+    beacon: /q\.quora\.com\/_\/ad\/[a-f0-9]+\/pixel/i,
+    global: "qp",
+    idFromResource: /q\.quora\.com\/_\/ad\/([a-f0-9]+)\/pixel/i,
+    eventParam: "tag",
+    baseEvent: "ViewContent",
+    unit: "hit",
   },
   {
     key: "meta",

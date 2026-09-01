@@ -119,6 +119,16 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
   {
+    key: "quora",
+    kicker: "Advertising",
+    name: "Quora Pixel",
+    items: [
+      "Pixel ID from the pixel request path",
+      "ViewContent fired or missing",
+      "Loaded but window.qp never set",
+    ],
+  },
+  {
     key: "meta",
     kicker: "Advertising",
     name: "Meta Pixel",

@@ -928,3 +928,77 @@ describe("analyze — Universal Analytics is not GA4", () => {
     );
   });
 });
+
+const QUORA_JS = "https://a.quora.com/qevents.js";
+const QUORA_ID = "d45c4d6ee1c840da8f6a3212618f3e29";
+const QUORA_VIEW = `https://q.quora.com/_/ad/${QUORA_ID}/pixel?j=1&tag=ViewContent&ts=1788265409328&i=gtm`;
+const QUORA_DWELL = `https://q.quora.com/_/ad/${QUORA_ID}/pixel?j=1&tag=DwellTime&ts=1788265409328&i=gtm&dwt=9855&ive=blur`;
+
+describe("analyze — Quora Pixel", () => {
+  it("reads the pixel id out of the request path", () => {
+    const report = analyze(
+      snap({
+        resources: [QUORA_JS, QUORA_VIEW],
+        scripts: [tag(QUORA_JS)],
+        globals: ["qp"],
+      })
+    );
+    const quora = toolOf(report, "Quora Pixel");
+    expect(quora.ids).toEqual([QUORA_ID]);
+    expect(quora.hits).toBe(1);
+    expect(quora.level).toBe("ok");
+  });
+
+  it("names the events from the tag parameter", () => {
+    const report = analyze(
+      snap({
+        resources: [QUORA_JS, QUORA_VIEW, QUORA_DWELL],
+        scripts: [tag(QUORA_JS)],
+        globals: ["qp"],
+      })
+    );
+    const finding = toolOf(report, "Quora Pixel").findings.find(
+      (f) => f.title === "Sending data"
+    );
+    expect(finding?.detail).toContain("ViewContent");
+    expect(finding?.detail).toContain("DwellTime");
+  });
+
+  it("warns when events fire but ViewContent never does", () => {
+    const report = analyze(
+      snap({
+        resources: [QUORA_JS, QUORA_DWELL],
+        scripts: [tag(QUORA_JS)],
+        globals: ["qp"],
+      })
+    );
+    expect(titles(report, "Quora Pixel")).toContain("No ViewContent recorded");
+  });
+
+  it("repeated hits do not read as a double install", () => {
+    const report = analyze(
+      snap({
+        resources: [QUORA_JS, QUORA_VIEW, QUORA_DWELL],
+        scripts: [tag(QUORA_JS)],
+        globals: ["qp"],
+      })
+    );
+    expect(toolOf(report, "Quora Pixel").ids).toEqual([QUORA_ID]);
+    expect(titles(report, "Quora Pixel")).not.toContain("Initialised twice");
+  });
+
+  it("warns when the script loads but window.qp is missing", () => {
+    const report = analyze(
+      snap({ resources: [QUORA_JS, QUORA_VIEW], scripts: [tag(QUORA_JS)] })
+    );
+    expect(titles(report, "Quora Pixel")).toContain(
+      "Script loaded but window.qp is missing"
+    );
+  });
+
+  it("errors when picked but absent", () => {
+    expect(titles(analyze(snap(), ["quora"]), "Quora Pixel")).toContain(
+      "No Quora Pixel tag found"
+    );
+  });
+});
