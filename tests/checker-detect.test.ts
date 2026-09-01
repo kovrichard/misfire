@@ -889,3 +889,42 @@ describe("analyze — Meta pixel id on a real page", () => {
     expect(titles(report, "Meta Pixel")).not.toContain("Initialised twice");
   });
 });
+
+describe("analyze — Universal Analytics is not GA4", () => {
+  const UA_HIT =
+    "https://www.google-analytics.com/j/collect?v=1&tid=UA-21102638-3&t=pageview";
+
+  it("keeps a UA property out of the GA4 id list", () => {
+    const report = analyze(
+      snap({
+        resources: [GTAG_URL, GA_HIT, UA_HIT],
+        scripts: [tag(GTAG_URL)],
+        dataLayer: [["config", "G-8FQ2M1BZDR"]],
+        globals: ["gtag"],
+      })
+    );
+    expect(toolOf(report, "GA4").ids).toEqual(["G-8FQ2M1BZDR"]);
+  });
+
+  it("does not count a UA pageview as a GA4 hit", () => {
+    const report = analyze(
+      snap({
+        resources: [GTAG_URL, GA_HIT, UA_HIT],
+        scripts: [tag(GTAG_URL)],
+        dataLayer: [["config", "G-8FQ2M1BZDR"]],
+        globals: ["gtag"],
+      })
+    );
+    expect(toolOf(report, "GA4").hits).toBe(1);
+  });
+
+  it("does not invent a GA4 install from a UA beacon alone", () => {
+    const names = analyze(snap({ resources: [UA_HIT] }), ["ga4"]).tools.map(
+      (t) => t.tool
+    );
+    expect(names).toEqual(["GA4"]);
+    expect(titles(analyze(snap({ resources: [UA_HIT] }), ["ga4"]), "GA4")).toContain(
+      "No GA4 tag found"
+    );
+  });
+});

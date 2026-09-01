@@ -4,6 +4,7 @@ import {
   CLARITY_TAG,
   captureAll,
   GA_COLLECT,
+  GA4_COLLECT_PATH,
   GTAG_SCRIPT,
   GTM_FRAME,
   GTM_SCRIPT,
@@ -128,6 +129,12 @@ function detectGtm(snapshot: Snapshot, required: boolean): ToolReport | null {
   return report("GTM", ids, 0, findings, "");
 }
 
+function isGa4Collect(url: string): boolean {
+  const tid = queryParam(url, "tid");
+  if (tid !== null) return tid.startsWith("G-");
+  return GA4_COLLECT_PATH.test(url);
+}
+
 function detectGa4(
   snapshot: Snapshot,
   blocker: string | null,
@@ -136,10 +143,10 @@ function detectGa4(
   const loads = captureAll(snapshot.resources, GTAG_SCRIPT);
   const declared = captureAll(scriptSrcs(snapshot), GTAG_SCRIPT);
   const configs = configuredMeasurementIds(snapshot.dataLayer);
-  const beacons = matching(snapshot.resources, GA_COLLECT);
+  const beacons = matching(snapshot.resources, GA_COLLECT).filter(isGa4Collect);
   const measured = beacons
     .map((url) => queryParam(url, "tid"))
-    .filter((id): id is string => id !== null);
+    .filter((id): id is string => id !== null && id.startsWith("G-"));
   const ids = unique([...loads, ...configs, ...declared, ...measured]);
   const findings: Finding[] = [];
 

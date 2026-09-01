@@ -6,6 +6,7 @@ export const GTAG_SCRIPT =
   /googletagmanager\.com\/gtag\/js\?[^\s"']*?\bid=(G-[A-Z0-9]+)/i;
 export const GA_COLLECT =
   /(google-analytics\.com|analytics\.google\.com)\/[a-z]\/collect/i;
+export const GA4_COLLECT_PATH = /\/g\/collect/i;
 export const CLARITY_TAG = /clarity\.ms\/tag\/([a-z0-9]+)/i;
 export const CLARITY_COLLECT = /clarity\.ms\/collect/i;
 
