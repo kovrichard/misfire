@@ -14,6 +14,7 @@ import {
   openGraph,
   robotsPolicy,
   siteUrl,
+  twitter,
 } from "@/lib/metadata";
 import publicConf from "@/lib/public-config";
 import { cn } from "@/lib/utils";
@@ -35,21 +36,20 @@ export const metadata: Metadata = {
     icon: "/icon.svg",
     apple: "/apple-icon.png",
   },
-  // creator: "",
   robots: robotsPolicy,
   openGraph: {
     ...openGraph,
     url: siteUrl,
   },
-  twitter: {
-    // creator: "@",
-    card: "summary_large_image",
-    title: metaTitle,
-    description: metaDescription,
-  },
-  category: "",
-  keywords: [],
-  generator: "Catalyst",
+  twitter,
+  keywords: [
+    "analytics checker",
+    "google tag manager",
+    "ga4",
+    "meta pixel",
+    "tag debugging",
+    "bookmarklet",
+  ],
 };
 
 export default function RootLayout({

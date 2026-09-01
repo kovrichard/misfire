@@ -7,7 +7,7 @@ export const robotsPolicy: Metadata["robots"] = conf.isProductionEnvironment
 
 export const metaTitle = "Misfire: find the analytics tags that never fire";
 export const metaDescription =
-  "A bookmarklet that runs inside your page and reports whether Google Analytics, Tag Manager and Clarity are really installed, and really sending data.";
+  "Run one bookmarklet and see which of your analytics and ad tags are really installed, and which loaded but never sent a single hit.";
 export const siteUrl = "https://misfire.konvert7.com";
 export const repoUrl = "https://github.com/kovrichard/misfire";
 

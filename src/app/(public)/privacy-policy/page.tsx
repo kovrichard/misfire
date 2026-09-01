@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { openGraph } from "@/lib/metadata";
 
 const path = "/privacy-policy";
-// TODO: change to the actual company
-const title = "Privacy Policy | Catalyst";
+const title = "Privacy Policy | Misfire";
 const description =
-  "The privacy policy covering how Catalyst collects, uses, and protects your data.";
+  "How Misfire handles your data. The checker runs entirely in your browser and sends nothing anywhere.";
 
 export const metadata: Metadata = {
   title,

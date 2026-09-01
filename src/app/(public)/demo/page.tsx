@@ -4,9 +4,8 @@ import Script from "next/script";
 export const metadata: Metadata = {
   title: "Deliberately broken install for Misfire",
   description:
-    "A page with a knowingly wrong GA4 setup, used to prove the checker works.",
+    "A page with a knowingly broken GA4 and Meta Pixel setup, used to prove the checker catches things.",
   alternates: { canonical: "/demo" },
-  robots: "noindex, nofollow",
 };
 
 const BROKEN_INSTALL = `window.dataLayer = window.dataLayer || [];
