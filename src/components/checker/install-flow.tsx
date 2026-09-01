@@ -12,7 +12,7 @@ import type { ToolKey } from "@/lib/checker/types";
 import { cn } from "@/lib/utils";
 
 const CARD =
-  "flex h-auto min-w-0 select-none flex-col items-start gap-[6px] whitespace-normal rounded-[calc(var(--radius-lg)*1.15)] border-2 bg-surface px-[16px] py-[14px] text-left hover:bg-surface data-[state=on]:bg-surface";
+  "flex h-auto min-w-0 select-none flex-col items-start justify-start gap-[6px] whitespace-normal rounded-[calc(var(--radius-lg)*1.15)] border-2 bg-surface px-[16px] py-[14px] text-left hover:bg-surface data-[state=on]:bg-surface";
 
 function sentence(names: string[]): string {
   if (names.length === 1) return names[0];
@@ -116,7 +116,7 @@ export function InstallFlow({
                     {on ? "✓" : ""}
                   </span>
                 </span>
-                <span className="font-heading text-[16px] leading-[1.2]">
+                <span className="flex min-h-[2.4em] items-start font-heading text-[16px] leading-[1.2]">
                   {card.name}
                 </span>
                 <ul className="flex list-none flex-col gap-[4px] p-0 text-[12.5px] text-neutral-800 leading-[1.45]">
