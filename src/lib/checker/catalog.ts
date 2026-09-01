@@ -149,6 +149,16 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
   {
+    key: "mixpanel",
+    kicker: "Product analytics",
+    name: "Mixpanel",
+    items: [
+      "Loaded but window.mixpanel never booted",
+      "Events that never leave the browser",
+      "Config fetches not counted as events",
+    ],
+  },
+  {
     key: "meta",
     kicker: "Advertising",
     name: "Meta Pixel",

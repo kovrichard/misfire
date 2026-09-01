@@ -15,6 +15,7 @@ export type ToolKey =
   | "quora"
   | "fathom"
   | "matomo"
+  | "mixpanel"
   | "meta"
   | "hotjar";
 

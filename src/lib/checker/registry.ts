@@ -16,6 +16,7 @@ export const TOOL_KEYS: ToolKey[] = [
   "quora",
   "fathom",
   "matomo",
+  "mixpanel",
   "meta",
   "hotjar",
 ];
@@ -37,6 +38,7 @@ export const TOOL_NAMES: Record<ToolKey, string> = {
   quora: "Quora Pixel",
   fathom: "Fathom",
   matomo: "Matomo",
+  mixpanel: "Mixpanel",
   meta: "Meta Pixel",
   hotjar: "Hotjar",
 };
@@ -58,6 +60,7 @@ export const PROBED_GLOBALS = [
   "__cfBeacon",
   "qp",
   "Matomo",
+  "mixpanel",
   "OneTrust",
   "OptanonActiveGroups",
   "Cookiebot",
@@ -210,6 +213,14 @@ export const TOOL_SPECS: ToolSpec[] = [
     global: "Matomo",
     idFromBeacon: "idsite",
     unit: "hit",
+  },
+  {
+    key: "mixpanel",
+    name: "Mixpanel",
+    tag: /cdn\.mxpnl\.com\/libs\/mixpanel[a-z0-9.-]*\.js/i,
+    beacon: /api-js\.mixpanel\.com\/(track|engage|groups|record)\//i,
+    global: "mixpanel",
+    unit: "event",
   },
   {
     key: "meta",

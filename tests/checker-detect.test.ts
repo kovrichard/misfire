@@ -1109,3 +1109,48 @@ describe("analyze — Matomo", () => {
     );
   });
 });
+
+const MIXPANEL_JS = "https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";
+const MIXPANEL_HIT = "https://api-js.mixpanel.com/track/?ip=1&verbose=1";
+const MIXPANEL_SETTINGS = "https://api-js.mixpanel.com/settings/?token=abc";
+
+describe("analyze — Mixpanel", () => {
+  it("counts a track call as an event", () => {
+    const report = analyze(
+      snap({
+        resources: [MIXPANEL_JS, MIXPANEL_HIT],
+        scripts: [tag(MIXPANEL_JS)],
+        globals: ["mixpanel"],
+      })
+    );
+    expect(toolOf(report, "Mixpanel").hits).toBe(1);
+    expect(toolOf(report, "Mixpanel").level).toBe("ok");
+  });
+
+  it("does not count a settings fetch as an event", () => {
+    const report = analyze(
+      snap({
+        resources: [MIXPANEL_JS, MIXPANEL_SETTINGS],
+        scripts: [tag(MIXPANEL_JS)],
+        globals: ["mixpanel"],
+      })
+    );
+    expect(toolOf(report, "Mixpanel").hits).toBe(0);
+    expect(titles(report, "Mixpanel")).toContain("Nothing sent yet");
+  });
+
+  it("warns when it loaded but window.mixpanel never appeared", () => {
+    const report = analyze(
+      snap({ resources: [MIXPANEL_JS, MIXPANEL_HIT], scripts: [tag(MIXPANEL_JS)] })
+    );
+    expect(titles(report, "Mixpanel")).toContain(
+      "Script loaded but window.mixpanel is missing"
+    );
+  });
+
+  it("errors when picked but absent", () => {
+    expect(titles(analyze(snap(), ["mixpanel"]), "Mixpanel")).toContain(
+      "No Mixpanel tag found"
+    );
+  });
+});
