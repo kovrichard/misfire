@@ -17,6 +17,7 @@ export function PublicConfigProvider({
   );
 }
 
+/** @lintignore */
 export function usePublicConfig(): PublicConfig {
   const config = useContext(PublicConfigContext);
 

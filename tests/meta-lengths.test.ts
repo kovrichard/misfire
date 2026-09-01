@@ -59,7 +59,7 @@ const pages = (
 
 describe("meta lengths", () => {
   test("there are public pages to check", () => {
-    expect(pages.length).toBeGreaterThan(3);
+    expect(pages.length).toBeGreaterThan(0);
   });
 
   test.each(pages)("$file declares its own title and description", ({

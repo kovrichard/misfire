@@ -8,12 +8,10 @@
     "scripts/ship/**",
     ".agents/hooks/*",
     "src/components/ui/*",
-    "src/lib/trpc/*",
     ".opencode/plugins/lint.ts",
-    "src/lib/aws/ses.tsx",
     "src/lib/metadata.ts",
-    "src/lib/stripe.ts",
-    "src/components/marketing/json-ld.tsx"
+    "src/components/marketing/json-ld.tsx",
+    "src/hooks/use-mobile.ts"
   ],
   "ignoreDependencies": [
     "@opencode-ai/plugin",
@@ -22,5 +20,8 @@
     "@secretlint/secretlint-rule-preset-recommend",
     "@stryker-mutator/bun-runner",
     "@stryker-mutator/api"
+  ],
+  "entry": [
+    "src/lib/checker/entry.ts"
   ]
 }

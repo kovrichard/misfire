@@ -5,16 +5,16 @@ export const robotsPolicy: Metadata["robots"] = conf.isProductionEnvironment
   ? "index, follow"
   : "noindex, nofollow";
 
-export const metaTitle = "Catalyst - Agentic Next.js Boilerplate";
+export const metaTitle = "analytics-check — verify your GA4, GTM and Clarity install";
 export const metaDescription =
-  "Catalyst is a Next.js starter kit that helps you build modern web applications faster and easier than ever before.";
-export const siteUrl = "https://catalyst.konvert7.com";
+  "A bookmarklet that runs inside your page and reports whether Google Analytics, Tag Manager and Clarity are really installed, and really sending data.";
+export const siteUrl = "https://analytics-check.konvert7.com";
 
 export const openGraph: Metadata["openGraph"] = {
   title: metaTitle,
   description: metaDescription,
   type: "website",
-  siteName: "Catalyst",
+  siteName: "analytics-check",
   locale: "en_US",
   images: [
     {

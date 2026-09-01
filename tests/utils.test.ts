@@ -1,12 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { cn, ensure, initialState } from "../src/lib/utils";
 
-// @catalyst:auth-start
-
-import { formatTimeAgo } from "../src/lib/utils";
-
-// @catalyst:auth-end
-
 describe("cn", () => {
   it("joins plain class names", () => {
     expect(cn("flex", "items-center")).toBe("flex items-center");
@@ -72,25 +66,3 @@ describe("initialState", () => {
     expect(initialState.success).toBeUndefined();
   });
 });
-
-// @catalyst:auth-start
-describe("formatTimeAgo", () => {
-  it("describes a moment seconds ago as just now", () => {
-    expect(formatTimeAgo(new Date(Date.now() - 1000))).toBe("just now");
-  });
-
-  it("describes an hour back in hours", () => {
-    expect(formatTimeAgo(new Date(Date.now() - 60 * 60 * 1000))).toBe("1 hour ago");
-  });
-
-  it("describes three days back in days", () => {
-    expect(formatTimeAgo(new Date(Date.now() - 3 * 24 * 60 * 60 * 1000))).toBe(
-      "3 days ago"
-    );
-  });
-
-  it("describes a future moment with in", () => {
-    expect(formatTimeAgo(new Date(Date.now() + 60 * 60 * 1000))).toBe("in 1 hour");
-  });
-});
-// @catalyst:auth-end

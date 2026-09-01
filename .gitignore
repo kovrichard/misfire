@@ -47,3 +47,4 @@ src/lib/prisma/generated
 .stryker-tmp
 stryker.log
 reports
+public/check.js

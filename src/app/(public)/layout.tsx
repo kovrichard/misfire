@@ -4,12 +4,6 @@ import type React from "react";
 import CatalystBadge from "@/components/footer/catalyst-badge";
 import { JsonLd, organizationLd, webSiteLd } from "@/components/marketing/json-ld";
 
-// @catalyst:auth-start
-
-import { Suspense } from "react";
-import { AuthNav, AuthNavSkeleton } from "@/components/auth/auth-nav";
-// @catalyst:auth-end
-
 export default function Layout({
   children,
 }: Readonly<{
@@ -24,14 +18,9 @@ export default function Layout({
           href="/"
           className="mr-auto flex items-center gap-2 whitespace-pre font-medium text-lg"
         >
-          <Image src="/icon.svg" alt="Catalyst" width={30} height={30} />
-          Catalyst
+          <Image src="/icon.svg" alt="analytics-check" width={30} height={30} />
+          analytics-check
         </Link>
-        {/* @catalyst:auth-start */}
-        <Suspense fallback={<AuthNavSkeleton />}>
-          <AuthNav />
-        </Suspense>
-        {/* @catalyst:auth-end */}
       </header>
       {children}
       <footer className="container flex w-full justify-start py-4">

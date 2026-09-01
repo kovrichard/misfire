@@ -11,42 +11,6 @@ const schema = z.object({
   scheme: z.string().default("https"),
   authority: z.string().default("localhost:3000"),
   host: z.url(),
-
-  // @catalyst:auth-start
-  // Auth
-  githubId: z.string().optional(),
-  githubSecret: z.string().optional(),
-  googleId: z.string().optional(),
-  googleSecret: z.string().optional(),
-  // @catalyst:auth-end
-
-  // @catalyst:email-start
-  // AWS
-  awsRegion: z.string().default("eu-central-1"),
-  fromEmailAddress: z.string().optional(),
-  awsConfigured: z.boolean().default(false),
-  // @catalyst:email-end
-
-  // @catalyst:stripe-start
-  // Stripe
-  stripeSecretKey: z.string().default(""),
-  stripeWebhookSecret: z.string().default(""),
-  stripePortalReturnUrl: z.string().default("http://localhost:3000/dashboard"),
-  stripeConfigured: z.boolean().default(false),
-  // @catalyst:stripe-end
-
-  // @catalyst:redis-start
-  // Redis
-  redisHost: z.string().default("localhost"),
-  redisPort: z.number().int().positive().default(6379),
-  redisPassword: z.string().min(20).optional(),
-  redisConfigured: z.boolean().default(false),
-  // @catalyst:redis-end
-
-  // @catalyst:auth-start
-  // Turnstile
-  turnstileSecretKey: z.string().optional(),
-  // @catalyst:auth-end
 });
 
 const envVars = {
@@ -58,51 +22,6 @@ const envVars = {
   scheme: process.env.SCHEME,
   authority: process.env.AUTHORITY,
   host: `${process.env.SCHEME || "https"}://${process.env.AUTHORITY || "localhost:3000"}`,
-
-  // @catalyst:auth-start
-  // Auth
-  githubId: process.env.GITHUB_CLIENT_ID,
-  githubSecret: process.env.GITHUB_CLIENT_SECRET,
-  googleId: process.env.GOOGLE_CLIENT_ID,
-  googleSecret: process.env.GOOGLE_CLIENT_SECRET,
-  // @catalyst:auth-end
-
-  // @catalyst:email-start
-  // AWS
-  awsRegion: process.env.AWS_REGION,
-  fromEmailAddress: process.env.FROM_EMAIL_ADDRESS,
-  awsConfigured:
-    process.env.AWS_ACCESS_KEY_ID !== undefined &&
-    process.env.AWS_SECRET_ACCESS_KEY !== undefined &&
-    process.env.AWS_REGION !== undefined &&
-    process.env.FROM_EMAIL_ADDRESS !== undefined,
-  // @catalyst:email-end
-
-  // @catalyst:stripe-start
-  // Stripe
-  stripeSecretKey: process.env.STRIPE_SECRET_KEY,
-  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-  stripePortalReturnUrl: process.env.STRIPE_PORTAL_RETURN_URL,
-  stripeConfigured:
-    process.env.STRIPE_SECRET_KEY !== undefined &&
-    process.env.STRIPE_WEBHOOK_SECRET !== undefined &&
-    process.env.STRIPE_PORTAL_RETURN_URL !== undefined,
-  // @catalyst:stripe-end
-
-  // @catalyst:redis-start
-  // Redis
-  redisHost: process.env.REDIS_HOST,
-  redisPort: parseInt(process.env.REDIS_PORT || "6379", 10),
-  redisPassword: process.env.REDIS_PASS,
-  redisConfigured: Boolean(
-    process.env.REDIS_HOST && process.env.REDIS_PORT && process.env.REDIS_PASS
-  ),
-  // @catalyst:redis-end
-
-  // @catalyst:auth-start
-  // Turnstile
-  turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
-  // @catalyst:auth-end
 };
 
 const conf = schema.parse(envVars);

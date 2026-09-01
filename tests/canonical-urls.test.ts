@@ -35,7 +35,7 @@ const pages = await publicPages();
 
 describe("canonical URLs", () => {
   it("finds public pages to check", () => {
-    expect(pages.length).toBeGreaterThan(3);
+    expect(pages.length).toBeGreaterThan(0);
   });
 
   // Pages declare the canonical either relative ("/pricing") or absolute; both

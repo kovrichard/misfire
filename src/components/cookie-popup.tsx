@@ -7,15 +7,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-declare global {
-  interface Window {
-    // biome-ignore lint/suspicious/noExplicitAny: TODO: Need further investigation
-    gtag?: (...args: any[]) => void;
-    // biome-ignore lint/suspicious/noExplicitAny: TODO: Need further investigation
-    clarity?: (...args: any[]) => void;
-  }
-}
-
 type Consent = "granted" | "denied";
 
 export default function CookiePopup() {
