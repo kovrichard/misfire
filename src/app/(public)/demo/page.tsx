@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Deliberately broken install — analytics-check",
+  title: "Deliberately broken install for analytics-check",
   description:
     "A page with a knowingly wrong GA4 setup, used to prove the checker works.",
   alternates: { canonical: "/demo" },
@@ -22,13 +22,13 @@ fbq('init', '8891234567890');
 fbq('init', '8891234567890');`;
 
 const EXPECTED = [
-  "GA4 — Measured twice: G-DEM0BR0KEN configured 2x",
-  "GA4 — No hit recorded yet, blamed on denied Consent Mode",
-  "Meta Pixel — Initialised twice: 8891234567890 set up 2x",
-  "Meta Pixel — Nothing sent yet",
-  "Consent — analytics_storage is denied",
-  "GTM — No GTM container found",
-  "Clarity — No Clarity tag found",
+  "GA4 · Measured twice: G-DEM0BR0KEN configured 2x",
+  "GA4 · No hit recorded yet, blamed on denied Consent Mode",
+  "Meta Pixel · Initialised twice: 8891234567890 set up 2x",
+  "Meta Pixel · Nothing sent yet",
+  "Consent · analytics_storage is denied",
+  "GTM · No GTM container found",
+  "Clarity · No Clarity tag found",
 ];
 
 export default function Demo() {
@@ -45,8 +45,8 @@ export default function Demo() {
         </h1>
         <p className="text-muted-foreground">
           This page configures the same GA4 property twice, initialises the same Meta
-          pixel twice, and denies analytics consent. Nothing here talks to Google or Meta
-          — the duplicates live in{" "}
+          pixel twice, and denies analytics consent. Nothing here talks to Google or Meta.
+          The duplicates live in{" "}
           <code className="font-mono text-foreground">dataLayer</code> and the{" "}
           <code className="font-mono text-foreground">fbq</code> queue, which is exactly
           where the checker reads them from. Run the bookmarklet now.

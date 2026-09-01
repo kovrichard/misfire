@@ -48,3 +48,6 @@ src/lib/prisma/generated
 stryker.log
 reports
 public/check.js
+
+# Design source dropped in for reference, not part of the app
+analytics-check.zip

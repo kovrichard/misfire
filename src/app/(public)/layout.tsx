@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type React from "react";
 import { JsonLd, organizationLd, webSiteLd } from "@/components/marketing/json-ld";
+import { catalystReferralUrl } from "@/lib/catalyst";
+import conf from "@/lib/config";
 
 export default function Layout({
   children,
@@ -31,7 +33,9 @@ export default function Layout({
 
       <footer className="flex justify-center px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-8)]">
         <a
-          href="https://catalyst.konvert7.com/"
+          href={catalystReferralUrl(conf.authority)}
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-[13px] text-neutral-600 no-underline hover:text-brand-700"
         >
           Made with Catalyst

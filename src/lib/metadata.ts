@@ -5,7 +5,7 @@ export const robotsPolicy: Metadata["robots"] = conf.isProductionEnvironment
   ? "index, follow"
   : "noindex, nofollow";
 
-export const metaTitle = "analytics-check — verify your GA4, GTM and Clarity install";
+export const metaTitle = "analytics-check: verify your GA4, GTM and Clarity install";
 export const metaDescription =
   "A bookmarklet that runs inside your page and reports whether Google Analytics, Tag Manager and Clarity are really installed, and really sending data.";
 export const siteUrl = "https://analytics-check.konvert7.com";
