@@ -109,6 +109,16 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
   {
+    key: "cloudflare",
+    kicker: "Measurement",
+    name: "Cloudflare Web Analytics",
+    items: [
+      "Token read out of the data-cf-beacon config",
+      "Loaded but window.__cfBeacon never set",
+      "Present but no RUM beacon sent",
+    ],
+  },
+  {
     key: "meta",
     kicker: "Advertising",
     name: "Meta Pixel",

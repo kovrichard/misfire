@@ -11,6 +11,7 @@ export type ToolKey =
   | "umami"
   | "googleads"
   | "linkedin"
+  | "cloudflare"
   | "meta"
   | "hotjar";
 

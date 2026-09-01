@@ -12,6 +12,7 @@ export const TOOL_KEYS: ToolKey[] = [
   "umami",
   "googleads",
   "linkedin",
+  "cloudflare",
   "meta",
   "hotjar",
 ];
@@ -29,6 +30,7 @@ export const TOOL_NAMES: Record<ToolKey, string> = {
   umami: "Umami",
   googleads: "Google Ads",
   linkedin: "LinkedIn Insight",
+  cloudflare: "Cloudflare Web Analytics",
   meta: "Meta Pixel",
   hotjar: "Hotjar",
 };
@@ -47,6 +49,7 @@ export const PROBED_GLOBALS = [
   "datafast",
   "umami",
   "_linkedin_data_partner_id",
+  "__cfBeacon",
   "OneTrust",
   "OptanonActiveGroups",
   "Cookiebot",
@@ -64,12 +67,24 @@ export interface ToolSpec {
   global?: string;
   idFromUrl?: RegExp;
   idFromData?: string;
+  idTransform?: (raw: string) => string | null;
   idFromDataLayer?: (dataLayer: unknown[]) => string[];
   idFromBeacon?: string;
   eventParam?: string;
   baseEvent?: string;
   debugTag?: RegExp;
   unit: string;
+}
+
+function cloudflareToken(raw: string): string | null {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null) return null;
+    const token = (parsed as { token?: unknown }).token;
+    return typeof token === "string" && token.length > 0 ? token : null;
+  } catch {
+    return null;
+  }
 }
 
 function googleAdsIds(dataLayer: unknown[]): string[] {
@@ -148,6 +163,16 @@ export const TOOL_SPECS: ToolSpec[] = [
     unit: "hit",
   },
   {
+    key: "cloudflare",
+    name: "Cloudflare Web Analytics",
+    tag: /static\.cloudflareinsights\.com\/beacon[a-z.]*\.js/i,
+    beacon: /\/cdn-cgi\/rum(\?|$)/i,
+    global: "__cfBeacon",
+    idFromData: "cfBeacon",
+    idTransform: cloudflareToken,
+    unit: "beacon",
+  },
+  {
     key: "meta",
     name: "Meta Pixel",
     tag: /connect\.facebook\.net\/[^/]+\/fbevents\.js/i,
@@ -189,10 +214,14 @@ export function matchesTag(spec: ToolSpec, url: string): boolean {
 
 export function idsFromScripts(scripts: ScriptTag[], spec: ToolSpec): string[] {
   const matched = scripts.filter((script) => matchesTag(spec, script.src));
-  if (spec.idFromData) {
+  const key = spec.idFromData;
+  if (key) {
+    const transform = spec.idTransform;
     return matched
-      .map((script) => spec.idFromData && script.data[spec.idFromData])
-      .filter((id): id is string => typeof id === "string" && id.length > 0);
+      .map((script) => script.data[key])
+      .filter((raw): raw is string => typeof raw === "string" && raw.length > 0)
+      .map((raw) => (transform ? transform(raw) : raw))
+      .filter((id): id is string => id !== null && id.length > 0);
   }
   return [];
 }

@@ -791,3 +791,71 @@ describe("analyze — LinkedIn Insight", () => {
     );
   });
 });
+
+const CF_JS = "https://static.cloudflareinsights.com/beacon.min.js";
+const CF_HIT = "https://acme.test/cdn-cgi/rum?v=1";
+const CF_CONFIG = '{"token":"cf0test0token","version":"2024.1.0"}';
+
+describe("analyze — Cloudflare Web Analytics", () => {
+  it("parses the token out of the data-cf-beacon json", () => {
+    const report = analyze(
+      snap({
+        resources: [CF_JS, CF_HIT],
+        scripts: [tag(CF_JS, { cfBeacon: CF_CONFIG })],
+        globals: ["__cfBeacon"],
+      })
+    );
+    const cf = toolOf(report, "Cloudflare Web Analytics");
+    expect(cf.ids).toEqual(["cf0test0token"]);
+    expect(cf.hits).toBe(1);
+    expect(cf.level).toBe("ok");
+  });
+
+  it("shows no id rather than raw json when the config will not parse", () => {
+    const report = analyze(
+      snap({
+        resources: [CF_JS, CF_HIT],
+        scripts: [tag(CF_JS, { cfBeacon: "not json at all" })],
+        globals: ["__cfBeacon"],
+      })
+    );
+    expect(toolOf(report, "Cloudflare Web Analytics").ids).toEqual([]);
+  });
+
+  it("shows no id when the json parses but carries no token", () => {
+    const report = analyze(
+      snap({
+        resources: [CF_JS, CF_HIT],
+        scripts: [tag(CF_JS, { cfBeacon: '{"version":"2024.1.0"}' })],
+        globals: ["__cfBeacon"],
+      })
+    );
+    expect(toolOf(report, "Cloudflare Web Analytics").ids).toEqual([]);
+  });
+
+  it("warns when it loaded but window.__cfBeacon was never set", () => {
+    const report = analyze(
+      snap({ resources: [CF_JS, CF_HIT], scripts: [tag(CF_JS, { cfBeacon: CF_CONFIG })] })
+    );
+    expect(titles(report, "Cloudflare Web Analytics")).toContain(
+      "Script loaded but window.__cfBeacon is missing"
+    );
+  });
+
+  it("warns when present but no rum beacon was sent", () => {
+    const report = analyze(
+      snap({
+        resources: [CF_JS],
+        scripts: [tag(CF_JS, { cfBeacon: CF_CONFIG })],
+        globals: ["__cfBeacon"],
+      })
+    );
+    expect(titles(report, "Cloudflare Web Analytics")).toContain("Nothing sent yet");
+  });
+
+  it("errors when picked but absent", () => {
+    expect(titles(analyze(snap(), ["cloudflare"]), "Cloudflare Web Analytics")).toContain(
+      "No Cloudflare Web Analytics tag found"
+    );
+  });
+});
