@@ -1,0 +1,39 @@
+import { type ClassValue, clsx } from "clsx";
+// @catalyst:auth-start
+
+import TimeAgo from "javascript-time-ago";
+import en from "javascript-time-ago/locale/en";
+// @catalyst:auth-end
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export type FormState = {
+  message: string;
+  description: string;
+  success?: boolean;
+};
+
+export const initialState: FormState = {
+  message: "",
+  description: "",
+  success: undefined,
+};
+
+// @catalyst:auth-start
+TimeAgo.addDefaultLocale(en);
+const timeAgo = new TimeAgo("en-US");
+
+export function formatTimeAgo(date: Date) {
+  return timeAgo.format(date);
+}
+// @catalyst:auth-end
+
+// biome-ignore lint/suspicious/noExplicitAny: TODO: Need further investigation
+export function ensure(condition: any, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(message);
+  }
+}

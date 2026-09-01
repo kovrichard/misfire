@@ -1,0 +1,64 @@
+"use client";
+
+import Link from "next/link";
+import { type FormEvent, useId, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { requestPasswordReset } from "@/lib/actions/users";
+
+export default function RequestPasswordResetForm() {
+  const emailId = useId();
+  const [isPending, setIsPending] = useState(false);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get("email") as string;
+
+    setIsPending(true);
+    try {
+      const result = await requestPasswordReset(email);
+      if (result.success) {
+        toast.success(result.message, {
+          description: result.description,
+        });
+      } else {
+        toast.error(result.message, {
+          description: result.description,
+        });
+      }
+    } finally {
+      setIsPending(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <Label htmlFor={emailId}>Email</Label>
+        <Input
+          type="email"
+          id={emailId}
+          name="email"
+          placeholder="johndoe@example.com"
+          autoComplete="email"
+          required
+          autoFocus
+        />
+      </div>
+      <Button type="submit" className="w-full" disabled={isPending}>
+        Send reset link
+      </Button>
+      <div className="text-center">
+        <Link
+          href="/login"
+          className="text-muted-foreground text-sm transition-colors hover:text-primary"
+        >
+          Back to log in
+        </Link>
+      </div>
+    </form>
+  );
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "tags": [
+    "-lintignore"
+  ],
+  "ignore": [
+    "scripts/utils/*",
+    "scripts/ship/**",
+    ".agents/hooks/*",
+    "src/components/ui/*",
+    "src/lib/trpc/*",
+    ".opencode/plugins/lint.ts",
+    "src/lib/aws/ses.tsx",
+    "src/lib/metadata.ts",
+    "src/lib/stripe.ts",
+    "src/components/marketing/json-ld.tsx"
+  ],
+  "ignoreDependencies": [
+    "@opencode-ai/plugin",
+    "shadcn",
+    "vaul",
+    "@secretlint/secretlint-rule-preset-recommend",
+    "@stryker-mutator/bun-runner",
+    "@stryker-mutator/api"
+  ]
+}

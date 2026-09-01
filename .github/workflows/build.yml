@@ -1,0 +1,107 @@
+name: build
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Setup Bun.js
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+
+    - name: Install dependencies
+      run: bun install --frozen-lockfile
+
+    - name: Audit dependencies
+      # Informational only — bun audit lacks a --production flag, and all
+      # current advisories are in dev-only deps (semantic-release, knip,
+      # lint-staged) that never ship to users. Flip to blocking once bun
+      # supports prod-only filtering.
+      continue-on-error: true
+      run: bun audit --audit-level=high
+
+    - name: Check (lint + format)
+      run: bun run check
+
+    - name: Type check
+      run: bun run type-check
+
+    - name: Knip
+      run: bun run knip
+
+    - name: jscpd
+      run: bun run jscpd
+
+    - name: Klint
+      run: bun run klint
+
+    - name: Madge
+      run: bun run madge
+
+    - name: Line endings
+      run: bun run lf
+
+    - name: Secretlint
+      run: bun run secretlint
+
+    - name: Tests
+      run: bun run test
+
+    - name: Build project
+      if: github.event_name == 'pull_request'
+      run: bun run build
+
+  publish:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Log in to ghcr.io
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4
+
+    - name: Compute lowercase image name
+      id: image
+      run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+    - name: Build and push image
+      uses: docker/build-push-action@v7
+      with:
+        context: .
+        target: release
+        file: Dockerfile
+        platforms: linux/amd64
+        push: true
+        # This job only runs on a push to main, which is the image Coolify deploys.
+        build-args: |
+          ENVIRONMENT=production
+        tags: |
+          ${{ steps.image.outputs.name }}:latest
+          ${{ steps.image.outputs.name }}:${{ github.sha }}

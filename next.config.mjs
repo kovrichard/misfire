@@ -1,0 +1,19 @@
+import NextBundleAnalyzer from "@next/bundle-analyzer";
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  cacheComponents: true,
+  partialPrefetching: true,
+  // Use `bun run build:standalone` if you are using Docker
+  output: process.env.EXPORT_MODE,
+  turbopack: {
+    root: import.meta.dirname,
+  },
+  reactCompiler: true,
+};
+
+const withBundleAnalyzer = NextBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+export default withBundleAnalyzer(nextConfig);

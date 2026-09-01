@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bun .agents/hooks/check.ts" },
+          { "type": "command", "command": "bun .agents/hooks/type-check.ts" },
+          { "type": "command", "command": "bun .agents/hooks/knip.ts" },
+          { "type": "command", "command": "bun .agents/hooks/jscpd.ts" },
+          { "type": "command", "command": "bun .agents/hooks/klint.ts" },
+          { "type": "command", "command": "bun .agents/hooks/madge.ts" },
+          { "type": "command", "command": "bun .agents/hooks/lf.ts" },
+          { "type": "command", "command": "bun .agents/hooks/secretlint.ts" }
+        ]
+      }
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "playwright",
+    "shadcn",
+    "next-devtools"
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(bun run check:*)",
+      "Bash(bun run check-write:*)",
+      "Bash(bun run type-check:*)",
+      "Bash(bun run knip:*)",
+      "Bash(bun run jscpd:*)",
+      "Bash(bun run klint:*)",
+      "Bash(bun run madge:*)",
+      "Bash(bun run lf:*)",
+      "Bash(bun run test:*)",
+      "Bash(bun run build:*)",
+      "Bash(bun test:*)",
+      "Bash(bunx biome check:*)",
+      "Bash(bunx biome format:*)",
+      "Bash(bunx tsc:*)",
+      "Bash(bunx klint:*)",
+      "WebFetch(domain:ui.shadcn.com)"
+    ]
+  }
+}

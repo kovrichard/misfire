@@ -1,0 +1,39 @@
+import type { Metadata } from "next";
+import { AgentSkills } from "@/components/marketing/agent-skills";
+import { AlsoIncluded, FinalCta } from "@/components/marketing/also-included";
+import { Hero } from "@/components/marketing/hero";
+import { HookChecklist } from "@/components/marketing/hook-checklist";
+import { McpServer } from "@/components/marketing/mcp-server";
+import { Pipeline } from "@/components/marketing/pipeline";
+import { logger } from "@/lib/logger";
+import { metaDescription, metaTitle, openGraph } from "@/lib/metadata";
+
+const path = "/";
+
+export const metadata: Metadata = {
+  title: metaTitle,
+  description: metaDescription,
+  alternates: {
+    canonical: path,
+  },
+  openGraph: {
+    ...openGraph,
+    url: path,
+  },
+};
+
+export default function Home() {
+  logger.info("Hello, Catalyst!");
+
+  return (
+    <main className="flex flex-1 flex-col items-center overflow-x-hidden">
+      <Hero />
+      <Pipeline />
+      <HookChecklist />
+      <AgentSkills />
+      <McpServer />
+      <AlsoIncluded />
+      <FinalCta />
+    </main>
+  );
+}
