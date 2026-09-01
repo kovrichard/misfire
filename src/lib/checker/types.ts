@@ -8,6 +8,7 @@ export type ToolKey =
   | "posthog"
   | "vercel"
   | "datafast"
+  | "umami"
   | "meta"
   | "hotjar";
 

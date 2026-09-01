@@ -79,6 +79,16 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
   {
+    key: "umami",
+    kicker: "Measurement",
+    name: "Umami",
+    items: [
+      "Website ID from the script tag",
+      "Loaded but window.umami never booted",
+      "Self-hosted installs recognised",
+    ],
+  },
+  {
     key: "meta",
     kicker: "Advertising",
     name: "Meta Pixel",

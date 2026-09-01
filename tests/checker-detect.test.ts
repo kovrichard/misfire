@@ -517,3 +517,132 @@ describe("analyze — vendors with colliding script paths", () => {
     expect(names).toContain("Plausible");
   });
 });
+
+const UMAMI_JS = "https://cloud.umami.is/script.js";
+const UMAMI_HIT = "https://gateway.umami.is/api/send";
+const UMAMI_SELF_JS = "https://stats.acme.com/umami.js";
+const UMAMI_SELF_HIT = "https://stats.acme.com/api/send";
+
+describe("analyze — Umami", () => {
+  it("reads the site from data-website-id on the cloud script", () => {
+    const report = analyze(
+      snap({
+        resources: [UMAMI_JS, UMAMI_HIT],
+        scripts: [tag(UMAMI_JS, { websiteId: "3c8f2a11-77b0" })],
+        globals: ["umami"],
+      })
+    );
+    const umami = toolOf(report, "Umami");
+    expect(umami.ids).toEqual(["3c8f2a11-77b0"]);
+    expect(umami.hits).toBe(1);
+    expect(umami.level).toBe("ok");
+  });
+
+  it("recognises a self-hosted install on its own domain", () => {
+    const report = analyze(
+      snap({
+        resources: [UMAMI_SELF_JS, UMAMI_SELF_HIT],
+        scripts: [tag(UMAMI_SELF_JS, { websiteId: "self-hosted-1" })],
+        globals: ["umami"],
+      })
+    );
+    expect(toolOf(report, "Umami").ids).toEqual(["self-hosted-1"]);
+    expect(toolOf(report, "Umami").hits).toBe(1);
+  });
+
+  it("warns when it loaded but window.umami never appeared", () => {
+    const report = analyze(
+      snap({ resources: [UMAMI_JS, UMAMI_HIT], scripts: [tag(UMAMI_JS)] })
+    );
+    expect(titles(report, "Umami")).toContain(
+      "Script loaded but window.umami is missing"
+    );
+  });
+
+  it("warns when present but nothing was sent", () => {
+    const report = analyze(
+      snap({ resources: [UMAMI_JS], scripts: [tag(UMAMI_JS)], globals: ["umami"] })
+    );
+    expect(titles(report, "Umami")).toContain("Nothing sent yet");
+  });
+
+  it("errors when picked but absent", () => {
+    expect(titles(analyze(snap(), ["umami"]), "Umami")).toContain("No Umami tag found");
+  });
+});
+
+describe("analyze — the three data-website-id vendors stay apart", () => {
+  const names = (report: Report) => report.tools.map((tool) => tool.tool);
+
+  it("reports only Umami for an Umami install", () => {
+    const found = names(
+      analyze(
+        snap({
+          resources: [UMAMI_JS, UMAMI_HIT],
+          scripts: [tag(UMAMI_JS, { websiteId: "u1" })],
+          globals: ["umami"],
+        })
+      )
+    );
+    expect(found).toContain("Umami");
+    expect(found).not.toContain("Datafast");
+    expect(found).not.toContain("Plausible");
+  });
+
+  it("reports only Datafast for a Datafast install", () => {
+    const found = names(
+      analyze(
+        snap({
+          resources: [DATAFAST_JS, DATAFAST_HIT],
+          scripts: [tag(DATAFAST_JS, { websiteId: "d1" })],
+          globals: ["datafast"],
+        })
+      )
+    );
+    expect(found).toContain("Datafast");
+    expect(found).not.toContain("Umami");
+  });
+
+  it("reports only Plausible for a proxied Plausible install", () => {
+    const proxied = "https://acme.com/js/script.js";
+    const found = names(
+      analyze(
+        snap({
+          resources: [proxied, "https://acme.com/api/event"],
+          scripts: [tag(proxied, { domain: "acme.com" })],
+          globals: ["plausible"],
+        })
+      )
+    );
+    expect(found).toContain("Plausible");
+    expect(found).not.toContain("Umami");
+    expect(found).not.toContain("Datafast");
+  });
+});
+
+describe("analyze — Umami self-hosted under the default filename", () => {
+  const generic = "https://stats.acme.com/script.js";
+
+  it("is found through the global and the send endpoint, without an id", () => {
+    const umami = toolOf(
+      analyze(
+        snap({
+          resources: [generic, "https://stats.acme.com/api/send"],
+          scripts: [tag(generic, { websiteId: "x9" })],
+          globals: ["umami"],
+        })
+      ),
+      "Umami"
+    );
+    expect(umami.hits).toBe(1);
+    expect(umami.ids).toEqual([]);
+    expect(umami.level).toBe("ok");
+  });
+
+  it("does not claim a bare /script.js that has nothing to do with Umami", () => {
+    const names = analyze(
+      snap({ resources: [generic], scripts: [tag(generic)] })
+    ).tools.map((tool) => tool.tool);
+    expect(names).not.toContain("Umami");
+  });
+});
