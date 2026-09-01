@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
+import { TOOL_CARDS } from "../src/lib/checker/catalog";
 import { analyze } from "../src/lib/checker/detect";
+import { DEFAULT_TOOLS, TOOL_KEYS } from "../src/lib/checker/registry";
 import { emptySnapshot, type Report, type Snapshot } from "../src/lib/checker/types";
 
 const GTM_URL = "https://www.googletagmanager.com/gtm.js?id=GTM-WX9K2LP";
@@ -1152,5 +1154,21 @@ describe("analyze — Mixpanel", () => {
     expect(titles(analyze(snap(), ["mixpanel"]), "Mixpanel")).toContain(
       "No Mixpanel tag found"
     );
+  });
+});
+
+describe("the tool catalog", () => {
+  it("lists every registered tool exactly once", () => {
+    const keys = TOOL_CARDS.map((card) => card.key).sort();
+    expect(keys).toEqual([...TOOL_KEYS].sort());
+  });
+
+  it("is ordered alphabetically by name", () => {
+    const names = TOOL_CARDS.map((card) => card.name);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+  });
+
+  it("keeps the Google trio as the default selection", () => {
+    expect([...DEFAULT_TOOLS].sort()).toEqual(["clarity", "ga4", "gtm"]);
   });
 });

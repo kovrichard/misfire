@@ -7,7 +7,7 @@ export interface ToolCard {
   items: string[];
 }
 
-export const TOOL_CARDS: ToolCard[] = [
+const CARDS: ToolCard[] = [
   {
     key: "gtm",
     kicker: "Containers",
@@ -179,3 +179,7 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
 ];
+
+export const TOOL_CARDS: ToolCard[] = [...CARDS].sort((a, b) =>
+  a.name.localeCompare(b.name)
+);
