@@ -17,7 +17,7 @@ export default function Layout({
       <JsonLd data={organizationLd()} />
       <JsonLd data={webSiteLd()} />
 
-      <nav className="mx-auto flex w-full max-w-[960px] items-center gap-[var(--space-4)] px-[clamp(16px,4vw,44px)] py-[var(--space-3)]">
+      <nav className="page-column flex items-center gap-[var(--space-4)] py-[var(--space-3)]">
         <a
           href="/"
           className="mr-auto inline-flex items-center gap-[10px] font-heading text-[18px] no-underline"
@@ -56,7 +56,7 @@ export default function Layout({
 
       {children}
 
-      <footer className="mx-auto flex w-full max-w-[960px] flex-wrap justify-center gap-[var(--space-3)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-8)]">
+      <footer className="page-column flex flex-wrap justify-center gap-[var(--space-3)] pt-[var(--space-6)] pb-[var(--space-8)]">
         <a
           href="/demo"
           className="text-[13px] text-neutral-600 no-underline hover:text-brand-700"

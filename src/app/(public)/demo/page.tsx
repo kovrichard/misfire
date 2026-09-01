@@ -32,7 +32,7 @@ const EXPECTED = [
 
 export default function Demo() {
   return (
-    <main className="container flex flex-1 flex-col gap-8 py-12">
+    <main className="page-column flex flex-1 flex-col gap-8 py-12">
       {/* biome-ignore lint/correctness/useUniqueElementIds: next/script keys inline scripts by id to dedupe them across renders */}
       <Script id="broken-analytics" strategy="afterInteractive">
         {BROKEN_INSTALL}
