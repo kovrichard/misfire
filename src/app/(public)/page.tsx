@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { CopySnippet } from "@/components/checker/copy-snippet";
 import { InstallFlow } from "@/components/checker/install-flow";
 import conf from "@/lib/config";
@@ -76,12 +75,12 @@ export default function Home() {
             broken, not your site.
           </p>
         </div>
-        <Link
+        <a
           href="/demo"
           className="inline-flex shrink-0 items-center justify-center gap-[6px] rounded-full bg-brand px-[15.84px] py-[var(--space-2)] font-heading text-[14px] text-canvas leading-[1.2] no-underline hover:bg-brand-600 active:bg-brand-700"
         >
           Open the demo
-        </Link>
+        </a>
       </section>
     </main>
   );

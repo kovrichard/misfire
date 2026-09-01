@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type React from "react";
 import { JsonLd, organizationLd, webSiteLd } from "@/components/marketing/json-ld";
 import { catalystReferralUrl } from "@/lib/catalyst";
@@ -19,7 +18,7 @@ export default function Layout({
       <JsonLd data={webSiteLd()} />
 
       <nav className="flex w-full items-center gap-[var(--space-4)] px-[clamp(16px,4vw,44px)] py-[var(--space-3)]">
-        <Link
+        <a
           href="/"
           className="mr-auto inline-flex items-center gap-[10px] font-heading text-[18px] no-underline"
         >
@@ -27,7 +26,7 @@ export default function Layout({
             ✓
           </span>
           Misfire
-        </Link>
+        </a>
         <a
           href={repoUrl}
           target="_blank"
@@ -50,12 +49,12 @@ export default function Layout({
       {children}
 
       <footer className="flex flex-wrap justify-center gap-[var(--space-3)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-8)]">
-        <Link
+        <a
           href="/demo"
           className="text-[13px] text-neutral-600 no-underline hover:text-brand-700"
         >
           Demo
-        </Link>
+        </a>
         <span aria-hidden="true" className="text-[13px] text-neutral-400">
           ·
         </span>
