@@ -129,6 +129,16 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
   {
+    key: "fathom",
+    kicker: "Measurement",
+    name: "Fathom",
+    items: [
+      "Site ID from the tag and the beacon",
+      "Loaded but window.fathom never booted",
+      "Present but no pageview sent",
+    ],
+  },
+  {
     key: "meta",
     kicker: "Advertising",
     name: "Meta Pixel",

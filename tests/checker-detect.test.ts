@@ -1002,3 +1002,50 @@ describe("analyze — Quora Pixel", () => {
     );
   });
 });
+
+const FATHOM_JS = "https://cdn.usefathom.com/script.js";
+const FATHOM_HIT =
+  "https://cdn.usefathom.com/?dp=1&sid=ABCDEFGH&h=https%3A%2F%2Facme.test";
+
+describe("analyze — Fathom", () => {
+  it("reads the site from the script tag and the beacon", () => {
+    const report = analyze(
+      snap({
+        resources: [FATHOM_JS, FATHOM_HIT],
+        scripts: [tag(FATHOM_JS, { site: "ABCDEFGH" })],
+        globals: ["fathom"],
+      })
+    );
+    const fathom = toolOf(report, "Fathom");
+    expect(fathom.ids).toEqual(["ABCDEFGH"]);
+    expect(fathom.hits).toBe(1);
+    expect(fathom.level).toBe("ok");
+  });
+
+  it("does not mistake the script request for a pageview", () => {
+    const report = analyze(
+      snap({
+        resources: [FATHOM_JS],
+        scripts: [tag(FATHOM_JS, { site: "ABCDEFGH" })],
+        globals: ["fathom"],
+      })
+    );
+    expect(toolOf(report, "Fathom").hits).toBe(0);
+    expect(titles(report, "Fathom")).toContain("Nothing sent yet");
+  });
+
+  it("warns when it loaded but window.fathom never appeared", () => {
+    const report = analyze(
+      snap({ resources: [FATHOM_JS, FATHOM_HIT], scripts: [tag(FATHOM_JS)] })
+    );
+    expect(titles(report, "Fathom")).toContain(
+      "Script loaded but window.fathom is missing"
+    );
+  });
+
+  it("errors when picked but absent", () => {
+    expect(titles(analyze(snap(), ["fathom"]), "Fathom")).toContain(
+      "No Fathom tag found"
+    );
+  });
+});

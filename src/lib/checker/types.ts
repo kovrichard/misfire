@@ -13,6 +13,7 @@ export type ToolKey =
   | "linkedin"
   | "cloudflare"
   | "quora"
+  | "fathom"
   | "meta"
   | "hotjar";
 

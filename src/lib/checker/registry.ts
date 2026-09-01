@@ -14,6 +14,7 @@ export const TOOL_KEYS: ToolKey[] = [
   "linkedin",
   "cloudflare",
   "quora",
+  "fathom",
   "meta",
   "hotjar",
 ];
@@ -33,6 +34,7 @@ export const TOOL_NAMES: Record<ToolKey, string> = {
   linkedin: "LinkedIn Insight",
   cloudflare: "Cloudflare Web Analytics",
   quora: "Quora Pixel",
+  fathom: "Fathom",
   meta: "Meta Pixel",
   hotjar: "Hotjar",
 };
@@ -186,6 +188,16 @@ export const TOOL_SPECS: ToolSpec[] = [
     eventParam: "tag",
     baseEvent: "ViewContent",
     unit: "hit",
+  },
+  {
+    key: "fathom",
+    name: "Fathom",
+    tag: /cdn\.usefathom\.com\/script\.js/i,
+    beacon: /cdn\.usefathom\.com\/\?/i,
+    global: "fathom",
+    idFromData: "site",
+    idFromBeacon: "sid",
+    unit: "event",
   },
   {
     key: "meta",
