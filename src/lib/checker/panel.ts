@@ -8,18 +8,20 @@ const STYLE = `
 :host { all: initial; }
 .card {
   position: fixed; right: 16px; bottom: 16px; width: 360px; max-width: calc(100vw - 32px);
-  max-height: calc(100vh - 32px); overflow: auto; z-index: 2147483647;
+  max-height: calc(100vh - 32px); overflow: hidden; z-index: 2147483647;
+  display: flex; flex-direction: column;
   background: #0d1117; color: #e6edf3; border: 1px solid #30363d; border-radius: 10px;
   box-shadow: 0 12px 40px rgba(0,0,0,.5); font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
 }
-header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #30363d; }
+header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #30363d; flex: none; }
 .brand { font-weight: 600; letter-spacing: .02em; margin-right: auto; }
 button {
   all: unset; cursor: pointer; padding: 2px 8px; border-radius: 5px; font-size: 11px;
   color: #8b949e; border: 1px solid #30363d;
 }
 button:hover { color: #e6edf3; border-color: #8b949e; }
-.url { padding: 8px 12px; color: #8b949e; font-size: 11px; word-break: break-all; border-bottom: 1px solid #21262d; }
+.url { padding: 8px 12px; color: #8b949e; font-size: 11px; word-break: break-all; border-bottom: 1px solid #21262d; flex: none; }
+.scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
 .tool { padding: 10px 12px; border-bottom: 1px solid #21262d; }
 .tool-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .name { font-weight: 600; min-width: 58px; flex: none; }
@@ -76,7 +78,6 @@ function renderTool(tool: ToolReport): HTMLElement {
 
 function renderBody(report: Report): DocumentFragment {
   const fragment = document.createDocumentFragment();
-  fragment.append(el("div", "url", report.href));
   for (const tool of report.tools) fragment.append(renderTool(tool));
   if (report.consent.length > 0) {
     const section = el("div", "section");
@@ -105,8 +106,9 @@ export function mountPanel(): Panel {
   const close = el("button", undefined, "✕");
   header.append(el("span", "brand", "Misfire"), close);
 
-  const body = el("div");
-  card.append(header, body);
+  const url = el("div", "url");
+  const body = el("div", "scroll");
+  card.append(header, url, body);
   root.append(style, card);
   document.body.append(host);
 
@@ -114,6 +116,7 @@ export function mountPanel(): Panel {
 
   return {
     update(report: Report): void {
+      url.textContent = report.href;
       body.replaceChildren(renderBody(report));
     },
   };

@@ -124,7 +124,7 @@ export function InstallFlow({
         <BookmarkletLink
           href={bookmarkletHref(host, ordered)}
           fallbackHref="/demo"
-          label="✓  Misfire"
+          label="✓  Check analytics"
         />
 
         <p className="mt-[var(--space-6)] mb-[var(--space-2)] text-[15px] text-neutral-800">
