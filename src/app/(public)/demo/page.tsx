@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Deliberately broken install for analytics-check",
+  title: "Deliberately broken install for Misfire",
   description:
     "A page with a knowingly wrong GA4 setup, used to prove the checker works.",
   alternates: { canonical: "/demo" },

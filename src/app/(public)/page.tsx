@@ -87,7 +87,7 @@ export default function Home() {
         <p className="mb-[var(--space-3)] text-[15px] text-neutral-800">
           Drag this to your bookmarks bar, then click it on any page you want to check.
         </p>
-        <BookmarkletLink href={href} fallbackHref="/demo" label="✓  Check analytics" />
+        <BookmarkletLink href={href} fallbackHref="/demo" label="✓  Misfire" />
 
         <p className="mt-[var(--space-6)] mb-[var(--space-2)] text-[15px] text-neutral-800">
           Prefer the console? Same loader:

@@ -22,7 +22,7 @@ export default function Layout({
           <span className="inline-flex size-[30px] shrink-0 items-center justify-center rounded-full bg-brand text-[15px] text-canvas">
             ✓
           </span>
-          analytics-check
+          Misfire
         </Link>
         <Link href="/demo" className="text-[14px] no-underline hover:text-brand">
           Demo

@@ -3,8 +3,8 @@ import { catalystReferralUrl } from "../src/lib/catalyst";
 
 describe("catalystReferralUrl", () => {
   it("carries the three referral params the badge used to send", () => {
-    const url = new URL(catalystReferralUrl("analytics-check.konvert7.com"));
-    expect(url.searchParams.get("utm_source")).toBe("analytics-check.konvert7.com");
+    const url = new URL(catalystReferralUrl("misfire.konvert7.com"));
+    expect(url.searchParams.get("utm_source")).toBe("misfire.konvert7.com");
     expect(url.searchParams.get("utm_medium")).toBe("referral");
     expect(url.searchParams.get("utm_campaign")).toBe("made-with-badge");
   });

@@ -1,6 +1,6 @@
 import type { Finding, Level, Report, ToolReport } from "./types";
 
-const PANEL_HOST_ID = "analytics-check-panel";
+const PANEL_HOST_ID = "misfire-panel";
 
 const GLYPH: Record<Level, string> = { ok: "✓", warn: "!", error: "✕" };
 
@@ -86,23 +86,6 @@ function renderBody(report: Report): DocumentFragment {
   return fragment;
 }
 
-function copyReport(report: Report, button: HTMLButtonElement): void {
-  const restore = () => {
-    button.textContent = "copy";
-  };
-  void navigator.clipboard
-    .writeText(JSON.stringify(report, null, 2))
-    .then(() => {
-      button.textContent = "copied";
-    })
-    .catch(() => {
-      button.textContent = "failed";
-    })
-    .finally(() => {
-      setTimeout(restore, 1500);
-    });
-}
-
 export interface Panel {
   update(report: Report): void;
 }
@@ -119,9 +102,8 @@ export function mountPanel(): Panel {
 
   const card = el("div", "card");
   const header = el("header");
-  const copy = el("button", undefined, "copy");
   const close = el("button", undefined, "✕");
-  header.append(el("span", "brand", "analytics-check"), copy, close);
+  header.append(el("span", "brand", "Misfire"), close);
 
   const body = el("div");
   card.append(header, body);
@@ -130,14 +112,8 @@ export function mountPanel(): Panel {
 
   close.addEventListener("click", () => host.remove());
 
-  let latest: Report | null = null;
-  copy.addEventListener("click", () => {
-    if (latest) copyReport(latest, copy);
-  });
-
   return {
     update(report: Report): void {
-      latest = report;
       body.replaceChildren(renderBody(report));
     },
   };
