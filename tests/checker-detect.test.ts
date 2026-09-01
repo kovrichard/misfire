@@ -341,3 +341,49 @@ describe("analyze — unit labels", () => {
     expect(toolOf(analyze(healthy()), "GTM").unit).toBe("");
   });
 });
+
+describe("analyze — tool selection", () => {
+  const names = (report: Report) => report.tools.map((tool) => tool.tool);
+
+  it("does not report Google tools for someone who only picked Plausible", () => {
+    const report = analyze(
+      snap({
+        resources: [PLAUSIBLE_JS, PLAUSIBLE_HIT],
+        scripts: [tag(PLAUSIBLE_JS, { domain: "acme.com" })],
+        globals: ["plausible"],
+      }),
+      ["plausible"]
+    );
+    expect(names(report)).toEqual(["Plausible"]);
+    expect(report.level).toBe("ok");
+  });
+
+  it("errors on a picked tool that is not installed", () => {
+    const report = analyze(snap(), ["plausible"]);
+    expect(names(report)).toEqual(["Plausible"]);
+    expect(titles(report, "Plausible")).toContain("No Plausible tag found");
+    expect(report.level).toBe("error");
+  });
+
+  it("still lists an unpicked tool that is actually on the page", () => {
+    const report = analyze(
+      snap({
+        resources: [POSTHOG_JS, POSTHOG_HIT, GTM_URL],
+        scripts: [tag(GTM_URL)],
+        gtmContainers: ["GTM-WX9K2LP"],
+        dataLayer: [{ "gtm.start": 1, event: "gtm.js" }],
+        globals: ["posthog", "google_tag_manager"],
+      }),
+      ["gtm"]
+    );
+    expect(names(report)).toEqual(["GTM", "PostHog"]);
+  });
+
+  it("falls back to the Google trio when nothing is passed", () => {
+    expect(names(analyze(snap()))).toEqual(["GTM", "GA4", "Clarity"]);
+  });
+
+  it("falls back when an empty selection arrives", () => {
+    expect(names(analyze(snap(), []))).toEqual(["GTM", "GA4", "Clarity"]);
+  });
+});

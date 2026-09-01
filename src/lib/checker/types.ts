@@ -1,5 +1,15 @@
 export type Level = "ok" | "warn" | "error";
 
+export type ToolKey =
+  | "gtm"
+  | "ga4"
+  | "clarity"
+  | "plausible"
+  | "posthog"
+  | "vercel"
+  | "meta"
+  | "hotjar";
+
 export interface ScriptTag {
   src: string;
   data: Record<string, string>;

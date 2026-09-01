@@ -1,4 +1,28 @@
-import type { ScriptTag } from "./types";
+import type { ScriptTag, ToolKey } from "./types";
+
+export const TOOL_KEYS: ToolKey[] = [
+  "gtm",
+  "ga4",
+  "clarity",
+  "plausible",
+  "posthog",
+  "vercel",
+  "meta",
+  "hotjar",
+];
+
+export const DEFAULT_TOOLS: ToolKey[] = ["gtm", "ga4", "clarity"];
+
+export const TOOL_NAMES: Record<ToolKey, string> = {
+  gtm: "GTM",
+  ga4: "GA4",
+  clarity: "Clarity",
+  plausible: "Plausible",
+  posthog: "PostHog",
+  vercel: "Vercel Analytics",
+  meta: "Meta Pixel",
+  hotjar: "Hotjar",
+};
 
 export const PROBED_GLOBALS = [
   "gtag",
@@ -21,6 +45,7 @@ export const PROBED_GLOBALS = [
 ];
 
 export interface ToolSpec {
+  key: ToolKey;
   name: string;
   tag: RegExp;
   beacon?: RegExp;
@@ -40,6 +65,7 @@ function metaPixelIds(dataLayer: unknown[]): string[] {
 
 export const TOOL_SPECS: ToolSpec[] = [
   {
+    key: "plausible",
     name: "Plausible",
     tag: /plausible\.io\/js\/script[a-z.]*\.js|\/js\/(plausible|script)[a-z.]*\.js/i,
     beacon: /\/api\/event\b/i,
@@ -48,6 +74,7 @@ export const TOOL_SPECS: ToolSpec[] = [
     unit: "event",
   },
   {
+    key: "posthog",
     name: "PostHog",
     tag: /\/static\/array(\.full)?\.js/i,
     beacon: /\/(e|i\/v0\/e)\/?(\?|$)/i,
@@ -55,6 +82,7 @@ export const TOOL_SPECS: ToolSpec[] = [
     unit: "event",
   },
   {
+    key: "vercel",
     name: "Vercel Analytics",
     tag: /\/_vercel\/insights\/script\.js|va\.vercel-scripts\.com\/v\d+\/script/i,
     beacon: /\/_vercel\/insights\/(view|event)|\/va\/(view|event)/i,
@@ -62,6 +90,7 @@ export const TOOL_SPECS: ToolSpec[] = [
     unit: "event",
   },
   {
+    key: "meta",
     name: "Meta Pixel",
     tag: /connect\.facebook\.net\/[^/]+\/fbevents\.js/i,
     beacon: /facebook\.com\/tr\b/i,
@@ -70,6 +99,7 @@ export const TOOL_SPECS: ToolSpec[] = [
     unit: "hit",
   },
   {
+    key: "hotjar",
     name: "Hotjar",
     tag: /static\.hotjar\.com\/c\/hotjar-([a-z0-9]+)\.js/i,
     beacon: /(metrics|t\.cs)\.hotjar\.io|insights\.hotjar\.com/i,

@@ -2,9 +2,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookmarkletLink } from "@/components/checker/bookmarklet-link";
 import { CopySnippet } from "@/components/checker/copy-snippet";
-import { bookmarkletHref, loaderSnippet } from "@/lib/checker/bookmarklet";
+import { InstallFlow } from "@/components/checker/install-flow";
 import conf from "@/lib/config";
 import { metaDescription, metaTitle, openGraph } from "@/lib/metadata";
 
@@ -16,36 +15,6 @@ export const metadata: Metadata = {
   alternates: { canonical: path },
   openGraph: { ...openGraph, url: path },
 };
-
-const CHECKS = [
-  {
-    kicker: "Containers",
-    name: "Google Tag Manager",
-    items: [
-      "Container ID from the gtm.js request",
-      "Loaded but never initialised",
-      "More than one container",
-    ],
-  },
-  {
-    kicker: "Measurement",
-    name: "Google Analytics 4",
-    items: [
-      "Measurement ID from the tag and the beacon",
-      "One property measured twice, doubling sessions",
-      "Tag present but no hit ever sent",
-    ],
-  },
-  {
-    kicker: "Recording",
-    name: "Microsoft Clarity",
-    items: [
-      "Project ID from the tag request",
-      "Loaded but window.clarity never booted",
-      "Recording but uploading nothing",
-    ],
-  },
-];
 
 const bundle = readFileSync(join(process.cwd(), "public/check.js"), "utf-8");
 
@@ -60,9 +29,6 @@ function CheckerPreview({ code }: Readonly<{ code: string }>) {
 }
 
 export default function Home() {
-  const href = bookmarkletHref(conf.host);
-  const snippet = loaderSnippet(conf.host);
-
   return (
     <main className="mx-auto w-full max-w-[800px] flex-1 px-[clamp(16px,4vw,44px)] pt-[clamp(28px,6vw,64px)] pb-[56px]">
       <section>
@@ -80,20 +46,7 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="mt-[clamp(40px,7vw,60px)]">
-        <h6 className="mb-[var(--space-3)] text-[13px] text-brand-700 uppercase tracking-[0.08em]">
-          Install
-        </h6>
-        <p className="mb-[var(--space-3)] text-[15px] text-neutral-800">
-          Drag this to your bookmarks bar, then click it on any page you want to check.
-        </p>
-        <BookmarkletLink href={href} fallbackHref="/demo" label="✓  Misfire" />
-
-        <p className="mt-[var(--space-6)] mb-[var(--space-2)] text-[15px] text-neutral-800">
-          Prefer the console? Same loader:
-        </p>
-        <CopySnippet code={snippet} />
-
+      <InstallFlow host={conf.host}>
         <div className="mt-[var(--space-8)] rounded-[calc(var(--radius-lg)*1.15)] bg-olive-100 p-[clamp(18px,4vw,28px)]">
           <h4 className="mb-[var(--space-2)] text-[20px] text-olive-900">
             When the site has a strict CSP
@@ -112,40 +65,7 @@ export default function Home() {
             preview={<CheckerPreview code={bundle} />}
           />
         </div>
-      </section>
-
-      <section className="mt-[clamp(40px,7vw,60px)]">
-        <h6 className="mb-[var(--space-4)] text-[13px] text-brand-700 uppercase tracking-[0.08em]">
-          What it checks
-        </h6>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-[var(--space-3)]">
-          {CHECKS.map((check) => (
-            <div
-              key={check.name}
-              className="flex flex-col gap-[var(--space-2)] rounded-[calc(var(--radius-lg)*1.15)] bg-surface p-[var(--space-4)]"
-            >
-              <span className="text-[10px] text-brand uppercase tracking-[0.1em]">
-                {check.kicker}
-              </span>
-              <span className="font-heading text-[17px] leading-[1.2]">{check.name}</span>
-              <ul className="mt-[var(--space-1)] flex list-none flex-col gap-[var(--space-2)] border-divider border-t p-0 pt-[var(--space-3)] text-[13.5px] text-neutral-800 leading-[1.45]">
-                {check.items.map((item) => (
-                  <li key={item} className="flex gap-[8px]">
-                    <span className="shrink-0 font-bold text-brand">·</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <p className="mt-[var(--space-4)] text-pretty text-[14.5px] text-neutral-700 leading-[1.65]">
-          Also detected, but only listed when actually on the page: Plausible, PostHog,
-          Vercel Analytics, Meta Pixel, Hotjar. And the consent platform (OneTrust,
-          Cookiebot, Osano, CookieYes or a bare TCF framework), so a tag that loaded but
-          sent nothing names what is holding it instead of shrugging at you.
-        </p>
-      </section>
+      </InstallFlow>
 
       <section className="mt-[clamp(40px,7vw,60px)] flex flex-wrap items-center gap-[var(--space-4)] rounded-[calc(var(--radius-lg)*1.15)] bg-surface p-[clamp(18px,4vw,28px)]">
         <div className="min-w-[220px] flex-1">

@@ -12,7 +12,13 @@ import {
   tally,
   unique,
 } from "./patterns";
-import { CMP_SPECS, idsFromScripts, TOOL_SPECS, type ToolSpec } from "./registry";
+import {
+  CMP_SPECS,
+  DEFAULT_TOOLS,
+  idsFromScripts,
+  TOOL_SPECS,
+  type ToolSpec,
+} from "./registry";
 import {
   type Finding,
   hasGlobal,
@@ -20,6 +26,7 @@ import {
   type Report,
   type Snapshot,
   scriptSrcs,
+  type ToolKey,
   type ToolReport,
 } from "./types";
 
@@ -58,7 +65,7 @@ function plural(count: number, unit: string): string {
   return count === 1 ? `1 ${unit}` : `${count} ${unit}s`;
 }
 
-function detectGtm(snapshot: Snapshot): ToolReport {
+function detectGtm(snapshot: Snapshot, required: boolean): ToolReport | null {
   const loaded = captureAll(snapshot.resources, GTM_SCRIPT);
   const framed = captureAll(snapshot.resources, GTM_FRAME);
   const declared = captureAll(scriptSrcs(snapshot), GTM_SCRIPT);
@@ -66,6 +73,7 @@ function detectGtm(snapshot: Snapshot): ToolReport {
   const findings: Finding[] = [];
 
   if (ids.length === 0) {
+    if (!required) return null;
     findings.push(
       bad("No GTM container found", "No gtm.js request and no window.google_tag_manager.")
     );
@@ -119,7 +127,11 @@ function detectGtm(snapshot: Snapshot): ToolReport {
   return report("GTM", ids, 0, findings, "");
 }
 
-function detectGa4(snapshot: Snapshot, blocker: string | null): ToolReport {
+function detectGa4(
+  snapshot: Snapshot,
+  blocker: string | null,
+  required: boolean
+): ToolReport | null {
   const loads = captureAll(snapshot.resources, GTAG_SCRIPT);
   const declared = captureAll(scriptSrcs(snapshot), GTAG_SCRIPT);
   const configs = configuredMeasurementIds(snapshot.dataLayer);
@@ -131,6 +143,7 @@ function detectGa4(snapshot: Snapshot, blocker: string | null): ToolReport {
   const findings: Finding[] = [];
 
   if (ids.length === 0) {
+    if (!required) return null;
     findings.push(
       bad(
         "No GA4 tag found",
@@ -188,7 +201,11 @@ function detectGa4(snapshot: Snapshot, blocker: string | null): ToolReport {
   return report("GA4", ids, beacons.length, findings);
 }
 
-function detectClarity(snapshot: Snapshot, blocker: string | null): ToolReport {
+function detectClarity(
+  snapshot: Snapshot,
+  blocker: string | null,
+  required: boolean
+): ToolReport | null {
   const loaded = captureAll(snapshot.resources, CLARITY_TAG);
   const declared = captureAll(scriptSrcs(snapshot), CLARITY_TAG);
   const beacons = matching(snapshot.resources, CLARITY_COLLECT);
@@ -196,6 +213,7 @@ function detectClarity(snapshot: Snapshot, blocker: string | null): ToolReport {
   const findings: Finding[] = [];
 
   if (ids.length === 0 && !hasGlobal(snapshot, "clarity")) {
+    if (!required) return null;
     findings.push(
       bad("No Clarity tag found", "No clarity.ms/tag request and no window.clarity.")
     );
@@ -273,12 +291,22 @@ function specIds(spec: ToolSpec, snapshot: Snapshot, urls: string[]): string[] {
 function detectSpec(
   spec: ToolSpec,
   snapshot: Snapshot,
-  blocker: string | null
+  blocker: string | null,
+  required: boolean
 ): ToolReport | null {
   const loaded = matching(snapshot.resources, spec.tag);
   const declared = matching(scriptSrcs(snapshot), spec.tag);
   const booted = spec.global ? hasGlobal(snapshot, spec.global) : false;
-  if (loaded.length === 0 && declared.length === 0 && !booted) return null;
+  if (loaded.length === 0 && declared.length === 0 && !booted) {
+    if (!required) return null;
+    return report(
+      spec.name,
+      [],
+      0,
+      [bad(`No ${spec.name} tag found`, "No request and no global on this page.")],
+      spec.unit
+    );
+  }
 
   const allIds = specIds(spec, snapshot, [...loaded, ...declared]);
   const ids = unique(allIds);
@@ -347,17 +375,20 @@ function detectConsent(snapshot: Snapshot): Finding[] {
   return findings;
 }
 
-export function analyze(snapshot: Snapshot): Report {
+export function analyze(snapshot: Snapshot, selected?: ToolKey[]): Report {
+  const picked = new Set<ToolKey>(selected?.length ? selected : DEFAULT_TOOLS);
   const blocker = blockerOf(snapshot);
   const core = [
-    detectGtm(snapshot),
-    detectGa4(snapshot, blocker),
-    detectClarity(snapshot, blocker),
+    detectGtm(snapshot, picked.has("gtm")),
+    detectGa4(snapshot, blocker, picked.has("ga4")),
+    detectClarity(snapshot, blocker, picked.has("clarity")),
   ];
-  const extra = TOOL_SPECS.map((spec) => detectSpec(spec, snapshot, blocker)).filter(
+  const extra = TOOL_SPECS.map((spec) =>
+    detectSpec(spec, snapshot, blocker, picked.has(spec.key))
+  );
+  const tools = [...core, ...extra].filter(
     (found): found is ToolReport => found !== null
   );
-  const tools = [...core, ...extra];
   const consent = detectConsent(snapshot);
   const level = worst([...tools.flatMap((tool) => tool.findings), ...consent]);
   return { href: snapshot.href, tools, consent, level };
