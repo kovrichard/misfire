@@ -4,7 +4,10 @@ import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export function CopySnippet({ code }: Readonly<{ code: string }>) {
+export function CopySnippet({
+  code,
+  preview,
+}: Readonly<{ code: string; preview?: string }>) {
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
@@ -17,7 +20,7 @@ export function CopySnippet({ code }: Readonly<{ code: string }>) {
   return (
     <div className="relative">
       <pre className="overflow-x-auto rounded-md border bg-muted/40 p-4 pr-14 text-xs leading-relaxed">
-        <code>{code}</code>
+        <code>{preview ?? code}</code>
       </pre>
       <Button
         variant="outline"

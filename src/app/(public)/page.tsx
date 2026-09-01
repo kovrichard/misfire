@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BookmarkletLink } from "@/components/checker/bookmarklet-link";
@@ -44,6 +46,13 @@ const CHECKS = [
   },
 ];
 
+const bundle = readFileSync(join(process.cwd(), "public/check.js"), "utf-8");
+
+function bundlePreview(code: string): string {
+  const kb = (code.length / 1024).toFixed(1);
+  return `${code.slice(0, 52)}…  // the whole checker, ${kb} KB, no network`;
+}
+
 export default function Home() {
   const href = bookmarkletHref(conf.host);
   const snippet = loaderSnippet(conf.host);
@@ -70,15 +79,23 @@ export default function Home() {
         <div>
           <BookmarkletLink href={href} fallbackHref="/demo" label="✓ Check analytics" />
         </div>
-        <p className="text-muted-foreground text-sm">
-          On a site with a strict Content-Security-Policy the bookmarklet is blocked —{" "}
-          <code className={cn(mono.className, "text-foreground")}>script-src</code>{" "}
-          governs{" "}
-          <code className={cn(mono.className, "text-foreground")}>javascript:</code> URLs
-          too. Paste this into the DevTools console instead; it is the same code and the
-          console is not subject to the page&apos;s CSP.
-        </p>
+        <p className="text-muted-foreground text-sm">Prefer the console? Same loader:</p>
         <CopySnippet code={snippet} />
+
+        <h3 className="pt-4 font-medium text-lg">When the site has a strict CSP</h3>
+        <p className="text-muted-foreground text-sm">
+          Both of the above fetch{" "}
+          <code className={cn(mono.className, "text-foreground")}>check.js</code>, and a
+          strict <code className={cn(mono.className, "text-foreground")}>script-src</code>{" "}
+          blocks that fetch. Running the loader from the DevTools console does not get
+          around it: the console evaluates what you type, but the{" "}
+          <code className={cn(mono.className, "text-foreground")}>
+            &lt;script src&gt;
+          </code>{" "}
+          it appends is still the page loading a script, so the policy still applies.
+          Paste the whole checker instead — it requests nothing.
+        </p>
+        <CopySnippet code={bundle} preview={bundlePreview(bundle)} />
       </section>
 
       <section className="flex flex-col gap-6">

@@ -15,6 +15,7 @@
     "build:checker": "bun build src/lib/checker/entry.ts --outfile public/check.js --minify --target browser --format iife",
     "predev": "bun run build:checker",
     "prebuild": "bun run build:checker",
+    "prebuild:standalone": "bun run build:checker",
     "build:standalone": "EXPORT_MODE=standalone next build",
     "start": "next start",
     "type-check": "tsc --noEmit",
