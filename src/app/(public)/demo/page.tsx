@@ -38,11 +38,11 @@ export default function Demo() {
         {BROKEN_INSTALL}
       </Script>
 
-      <section className="flex max-w-2xl flex-col gap-4">
+      <section className="flex flex-col gap-4">
         <h1 className="font-semibold text-3xl tracking-tight">
           A deliberately broken install
         </h1>
-        <p className="text-muted-foreground">
+        <p className="max-w-[40em] text-muted-foreground">
           This page configures the same GA4 property twice, initialises the same Meta
           pixel twice, and denies analytics consent. Nothing here talks to Google or Meta.
           The duplicates live in{" "}
@@ -52,14 +52,14 @@ export default function Demo() {
         </p>
       </section>
 
-      <section className="flex max-w-2xl flex-col gap-4">
+      <section className="flex flex-col gap-4">
         <h2 className="font-semibold text-xl tracking-tight">The install</h2>
         <pre className="overflow-x-auto rounded-md border bg-muted/40 p-4 text-xs leading-relaxed">
           <code>{BROKEN_INSTALL}</code>
         </pre>
       </section>
 
-      <section className="flex max-w-2xl flex-col gap-4">
+      <section className="flex flex-col gap-4">
         <h2 className="font-semibold text-xl tracking-tight">What you should see</h2>
         <ul className="flex flex-col gap-2 text-muted-foreground text-sm">
           {EXPECTED.map((line) => (
