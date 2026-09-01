@@ -14,55 +14,25 @@ WORKDIR /app
 # engine download.
 RUN apt update -y && apt install -y --no-install-recommends nodejs ca-certificates && rm -rf /var/lib/apt/lists/*
 
-
 # install dependencies into temp directory
 # this will cache them and speed up future builds
 FROM base AS install
 
 RUN mkdir -p /temp/dev
 COPY package.json bun.lock /temp/dev/
-# @catalyst:db-start
-COPY prisma/ /temp/dev/prisma/
-# @catalyst:db-end
 WORKDIR /temp/dev
 RUN bun install --frozen-lockfile
 WORKDIR /app
 
 RUN mkdir -p /temp/prod
 COPY package.json bun.lock /temp/prod/
-# @catalyst:db-start
-COPY prisma/ /temp/prod/prisma/
-# @catalyst:db-end
 WORKDIR /temp/prod
 RUN bun install --frozen-lockfile --production --ignore-scripts
-# @catalyst:db-start
-RUN bun run postinstall
-# @catalyst:db-end
-
-
-# @catalyst:db-start
-FROM base AS migrate-deps
-
-RUN mkdir -p /temp/migrate
-COPY package.json /temp/migrate/source-package.json
-RUN cd /temp/migrate \
-    && PRISMA_VER="$(node -p "require('./source-package.json').devDependencies.prisma")" \
-    && DOTENV_VER="$(node -p "require('./source-package.json').devDependencies.dotenv")" \
-    && DOTENV_EXPAND_VER="$(node -p "require('./source-package.json').devDependencies['dotenv-expand']")" \
-    && rm source-package.json \
-    && echo "{\"dependencies\":{\"prisma\":\"$PRISMA_VER\",\"dotenv\":\"$DOTENV_VER\",\"dotenv-expand\":\"$DOTENV_EXPAND_VER\"}}" > package.json \
-    && bun install
-# @catalyst:db-end
-
 
 FROM base AS prerelease
 
 COPY --from=install /temp/dev/node_modules node_modules
-# @catalyst:db-start
-COPY --from=install /temp/dev/src/lib/prisma/generated ./src/lib/prisma/generated
-# @catalyst:db-end
 
-COPY ./emails ./emails
 COPY ./public ./public
 COPY ./src ./src
 COPY package.json bun.lock ./
@@ -81,7 +51,6 @@ ENV ENVIRONMENT=$ENVIRONMENT
 
 RUN bun run build:standalone
 
-
 FROM base AS release
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -96,23 +65,13 @@ COPY --from=prerelease --chmod=755 /app/public ./public
 COPY --from=prerelease --chmod=755 /app/.next/standalone ./
 COPY --from=prerelease --chmod=755 /app/.next/static ./.next/static
 
-# @catalyst:db-start
-COPY --chmod=755 ./prisma ./prisma
-COPY --chmod=755 ./prisma.config.ts ./prisma.config.ts
-COPY --from=migrate-deps --chmod=755 /temp/migrate/node_modules ./node_modules
-# @catalyst:db-end
-
 USER nextjs
 
 EXPOSE 3000
 
 CMD ["node", "./server.js"]
 
-
 FROM base AS dev
 
 # copy the installed dependencies from the install stage
 COPY --from=install /temp/dev/node_modules node_modules
-# @catalyst:db-start
-COPY --from=install /temp/dev/src/lib/prisma/generated ./src/lib/prisma/generated
-# @catalyst:db-end
