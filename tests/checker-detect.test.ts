@@ -1049,3 +1049,63 @@ describe("analyze — Fathom", () => {
     );
   });
 });
+
+const MATOMO_JS = "https://analytics.acme.com/matomo.js";
+const MATOMO_HIT = "https://analytics.acme.com/matomo.php?idsite=7&rec=1&r=482913";
+const PIWIK_JS = "https://stats.acme.com/piwik.js";
+const PIWIK_HIT = "https://stats.acme.com/piwik.php?idsite=3&rec=1";
+
+describe("analyze — Matomo", () => {
+  it("reads the site id off the tracking request", () => {
+    const report = analyze(
+      snap({
+        resources: [MATOMO_JS, MATOMO_HIT],
+        scripts: [tag(MATOMO_JS)],
+        globals: ["Matomo"],
+      })
+    );
+    const matomo = toolOf(report, "Matomo");
+    expect(matomo.ids).toEqual(["7"]);
+    expect(matomo.hits).toBe(1);
+    expect(matomo.level).toBe("ok");
+  });
+
+  it("recognises the older piwik naming", () => {
+    const report = analyze(
+      snap({
+        resources: [PIWIK_JS, PIWIK_HIT],
+        scripts: [tag(PIWIK_JS)],
+        globals: ["Matomo"],
+      })
+    );
+    expect(toolOf(report, "Matomo").ids).toEqual(["3"]);
+  });
+
+  it("repeated hits do not read as a double install", () => {
+    const report = analyze(
+      snap({
+        resources: [MATOMO_JS, MATOMO_HIT, MATOMO_HIT, MATOMO_HIT],
+        scripts: [tag(MATOMO_JS)],
+        globals: ["Matomo"],
+      })
+    );
+    expect(toolOf(report, "Matomo").ids).toEqual(["7"]);
+    expect(titles(report, "Matomo")).not.toContain("Initialised twice");
+    expect(toolOf(report, "Matomo").hits).toBe(3);
+  });
+
+  it("warns when it loaded but window.Matomo never appeared", () => {
+    const report = analyze(
+      snap({ resources: [MATOMO_JS, MATOMO_HIT], scripts: [tag(MATOMO_JS)] })
+    );
+    expect(titles(report, "Matomo")).toContain(
+      "Script loaded but window.Matomo is missing"
+    );
+  });
+
+  it("errors when picked but absent", () => {
+    expect(titles(analyze(snap(), ["matomo"]), "Matomo")).toContain(
+      "No Matomo tag found"
+    );
+  });
+});

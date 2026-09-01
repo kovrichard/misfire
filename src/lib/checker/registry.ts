@@ -15,6 +15,7 @@ export const TOOL_KEYS: ToolKey[] = [
   "cloudflare",
   "quora",
   "fathom",
+  "matomo",
   "meta",
   "hotjar",
 ];
@@ -35,6 +36,7 @@ export const TOOL_NAMES: Record<ToolKey, string> = {
   cloudflare: "Cloudflare Web Analytics",
   quora: "Quora Pixel",
   fathom: "Fathom",
+  matomo: "Matomo",
   meta: "Meta Pixel",
   hotjar: "Hotjar",
 };
@@ -55,6 +57,7 @@ export const PROBED_GLOBALS = [
   "_linkedin_data_partner_id",
   "__cfBeacon",
   "qp",
+  "Matomo",
   "OneTrust",
   "OptanonActiveGroups",
   "Cookiebot",
@@ -198,6 +201,15 @@ export const TOOL_SPECS: ToolSpec[] = [
     idFromData: "site",
     idFromBeacon: "sid",
     unit: "event",
+  },
+  {
+    key: "matomo",
+    name: "Matomo",
+    tag: /\/(matomo|piwik)\.js(\?|$)/i,
+    beacon: /\/(matomo|piwik)\.php/i,
+    global: "Matomo",
+    idFromBeacon: "idsite",
+    unit: "hit",
   },
   {
     key: "meta",

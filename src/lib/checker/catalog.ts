@@ -139,6 +139,16 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
   {
+    key: "matomo",
+    kicker: "Measurement",
+    name: "Matomo",
+    items: [
+      "Site ID from the tracking request",
+      "Loaded but window.Matomo never booted",
+      "Self-hosted installs recognised",
+    ],
+  },
+  {
     key: "meta",
     kicker: "Advertising",
     name: "Meta Pixel",

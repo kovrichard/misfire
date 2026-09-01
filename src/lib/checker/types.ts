@@ -14,6 +14,7 @@ export type ToolKey =
   | "cloudflare"
   | "quora"
   | "fathom"
+  | "matomo"
   | "meta"
   | "hotjar";
 
