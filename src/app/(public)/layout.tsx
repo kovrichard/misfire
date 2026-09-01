@@ -22,9 +22,17 @@ export default function Layout({
           href="/"
           className="mr-auto inline-flex items-center gap-[10px] font-heading text-[18px] no-underline"
         >
-          <span className="inline-flex size-[30px] shrink-0 items-center justify-center rounded-full bg-brand text-[15px] text-canvas">
-            ✓
-          </span>
+          <svg viewBox="0 0 100 100" aria-hidden="true" className="size-[30px] shrink-0">
+            <circle cx="50" cy="50" r="50" className="fill-brand" />
+            <path
+              d="M29 51.5 L43.5 66 L71 33"
+              fill="none"
+              strokeWidth="9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="stroke-canvas"
+            />
+          </svg>
           Misfire
         </a>
         <a
