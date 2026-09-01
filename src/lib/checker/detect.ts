@@ -22,6 +22,7 @@ import {
   type ToolSpec,
 } from "./registry";
 import {
+  type BeaconHost,
   type Finding,
   hasGlobal,
   type Level,
@@ -435,6 +436,45 @@ function detectConsent(snapshot: Snapshot): Finding[] {
   return findings;
 }
 
+function hostOf(url: string): string | null {
+  try {
+    return new URL(url).host;
+  } catch {
+    return null;
+  }
+}
+
+function claimedHosts(snapshot: Snapshot, tools: ToolReport[]): Set<string> {
+  const named = new Set(tools.map((tool) => tool.tool));
+  const claimed = new Set<string>();
+  const own = hostOf(snapshot.href);
+  if (own) claimed.add(own);
+
+  for (const spec of TOOL_SPECS) {
+    if (!named.has(spec.name)) continue;
+    for (const url of snapshot.resources) {
+      const host = hostOf(url);
+      if (host && (matchesTag(spec, url) || spec.beacon?.test(url))) claimed.add(host);
+    }
+  }
+  return claimed;
+}
+
+function unknownBeacons(snapshot: Snapshot, tools: ToolReport[]): BeaconHost[] {
+  const claimed = claimedHosts(snapshot, tools);
+  const counts = new Map<string, number>();
+
+  for (const url of snapshot.beacons) {
+    const host = hostOf(url);
+    if (!host || claimed.has(host)) continue;
+    counts.set(host, (counts.get(host) ?? 0) + 1);
+  }
+
+  return [...counts]
+    .map(([host, count]) => ({ host, count }))
+    .sort((a, b) => b.count - a.count || a.host.localeCompare(b.host));
+}
+
 export function analyze(snapshot: Snapshot, selected?: ToolKey[]): Report {
   const picked = new Set<ToolKey>(selected?.length ? selected : DEFAULT_TOOLS);
   const blocker = blockerOf(snapshot);
@@ -451,5 +491,11 @@ export function analyze(snapshot: Snapshot, selected?: ToolKey[]): Report {
   );
   const consent = detectConsent(snapshot);
   const level = worst([...tools.flatMap((tool) => tool.findings), ...consent]);
-  return { href: snapshot.href, tools, consent, level };
+  return {
+    href: snapshot.href,
+    tools,
+    consent,
+    unknownBeacons: unknownBeacons(snapshot, tools),
+    level,
+  };
 }

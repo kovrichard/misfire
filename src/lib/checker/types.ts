@@ -24,9 +24,15 @@ export interface ScriptTag {
   data: Record<string, string>;
 }
 
+export interface BeaconHost {
+  host: string;
+  count: number;
+}
+
 export interface Snapshot {
   href: string;
   resources: string[];
+  beacons: string[];
   scripts: ScriptTag[];
   dataLayer: unknown[];
   gtmContainers: string[];
@@ -52,6 +58,7 @@ export interface Report {
   href: string;
   tools: ToolReport[];
   consent: Finding[];
+  unknownBeacons: BeaconHost[];
   level: Level;
 }
 
@@ -59,6 +66,7 @@ export function emptySnapshot(href = ""): Snapshot {
   return {
     href,
     resources: [],
+    beacons: [],
     scripts: [],
     dataLayer: [],
     gtmContainers: [],

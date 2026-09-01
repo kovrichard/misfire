@@ -1172,3 +1172,52 @@ describe("the tool catalog", () => {
     expect([...DEFAULT_TOOLS].sort()).toEqual(["clarity", "ga4", "gtm"]);
   });
 });
+
+const BING_BEACON = "https://bat.bing.net/actionp/0?ti=4061438&Ver=2";
+const MARKETO_BEACON = "https://875-uvy-685.mktoresp.com/webevents/visitWebPage?_mchNc=1";
+
+describe("analyze — unrecognised beacons", () => {
+  it("groups unknown beacon hosts and counts them", () => {
+    const report = analyze(
+      snap({
+        resources: [BING_BEACON, MARKETO_BEACON, BING_BEACON],
+        beacons: [BING_BEACON, MARKETO_BEACON, BING_BEACON],
+      })
+    );
+    expect(report.unknownBeacons).toEqual([
+      { host: "bat.bing.net", count: 2 },
+      { host: "875-uvy-685.mktoresp.com", count: 1 },
+    ]);
+  });
+
+  it("stays empty when nothing sent a beacon", () => {
+    expect(analyze(healthy()).unknownBeacons).toEqual([]);
+  });
+
+  it("ignores requests that were not sent as beacons", () => {
+    const report = analyze(snap({ resources: [BING_BEACON], beacons: [] }));
+    expect(report.unknownBeacons).toEqual([]);
+  });
+
+  it("does not report the page's own host", () => {
+    const report = analyze(
+      snap({
+        resources: ["https://acme.test/api/telemetry"],
+        beacons: ["https://acme.test/api/telemetry"],
+      })
+    );
+    expect(report.unknownBeacons).toEqual([]);
+  });
+
+  it("does not report a host already attributed to a detected tool", () => {
+    const report = analyze(
+      snap({
+        resources: [PLAUSIBLE_JS, PLAUSIBLE_HIT, BING_BEACON],
+        scripts: [tag(PLAUSIBLE_JS, { domain: "acme.com" })],
+        globals: ["plausible"],
+        beacons: [PLAUSIBLE_HIT, BING_BEACON],
+      })
+    );
+    expect(report.unknownBeacons).toEqual([{ host: "bat.bing.net", count: 1 }]);
+  });
+});

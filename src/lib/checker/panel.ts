@@ -87,6 +87,10 @@ button:hover { color: #e6edf3; border-color: #8b949e; }
 .warn .mark, .warn .finding-title { color: #d29922; }
 .error .mark, .error .finding-title { color: #f85149; }
 .section { padding: 10px 12px; }
+.unknown { padding: 10px 12px; border-top: 1px solid #30363d; }
+.unknown-title { font-weight: 600; color: #d29922; }
+.unknown-row { display: flex; gap: 8px; margin-top: 6px; color: #8b949e; }
+.unknown-host { flex: 1; color: #e6edf3; word-break: break-all; }
 .empty { color: #8b949e; padding: 10px 12px; }
 `;
 
@@ -128,6 +132,27 @@ function renderTool(tool: ToolReport): HTMLElement {
   return block;
 }
 
+function renderUnknown(hosts: Report["unknownBeacons"]): HTMLElement {
+  const block = el("div", "unknown");
+  const label =
+    hosts.length === 1 ? "1 unrecognised beacon" : `${hosts.length} unrecognised beacons`;
+  block.append(el("div", "unknown-title", label));
+  block.append(
+    el(
+      "div",
+      "detail",
+      "Sent with navigator.sendBeacon by something Misfire does not know."
+    )
+  );
+  for (const { host, count } of hosts) {
+    const row = el("div", "unknown-row");
+    row.append(el("span", "unknown-host", host));
+    row.append(el("span", undefined, count === 1 ? "1 beacon" : `${count} beacons`));
+    block.append(row);
+  }
+  return block;
+}
+
 function renderBody(report: Report): DocumentFragment {
   const fragment = document.createDocumentFragment();
   for (const tool of report.tools) fragment.append(renderTool(tool));
@@ -135,6 +160,9 @@ function renderBody(report: Report): DocumentFragment {
     const section = el("div", "section");
     for (const finding of report.consent) section.append(renderFinding(finding));
     fragment.append(section);
+  }
+  if (report.unknownBeacons.length > 0) {
+    fragment.append(renderUnknown(report.unknownBeacons));
   }
   return fragment;
 }

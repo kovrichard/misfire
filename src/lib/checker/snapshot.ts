@@ -17,11 +17,18 @@ export function widenResourceBuffer(): void {
   performance.setResourceTimingBufferSize(RESOURCE_BUFFER);
 }
 
-function requestedUrls(): string[] {
-  return performance
-    .getEntriesByType("resource")
-    .map((entry) => entry.name)
-    .filter((name) => typeof name === "string");
+function resourceEntries(): PerformanceResourceTiming[] {
+  return performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+}
+
+function requestedUrls(entries: PerformanceResourceTiming[]): string[] {
+  return entries.map((entry) => entry.name).filter((name) => typeof name === "string");
+}
+
+function beaconUrls(entries: PerformanceResourceTiming[]): string[] {
+  return entries
+    .filter((entry) => entry.initiatorType === "beacon")
+    .map((entry) => entry.name);
 }
 
 function datasetOf(script: HTMLScriptElement): Record<string, string> {
@@ -60,9 +67,11 @@ function metaPixelQueue(): unknown[] {
 
 export function readSnapshot(): Snapshot {
   if (typeof window === "undefined") return emptySnapshot();
+  const entries = resourceEntries();
   return {
     href: window.location.href,
-    resources: requestedUrls(),
+    resources: requestedUrls(entries),
+    beacons: beaconUrls(entries),
     scripts: scriptTags(),
     dataLayer: [...normaliseDataLayer(window.dataLayer), ...metaPixelQueue()],
     gtmContainers: gtmContainerIds(),
