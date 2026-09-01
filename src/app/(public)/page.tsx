@@ -18,7 +18,7 @@ const bundle = readFileSync(join(process.cwd(), "public/check.js"), "utf-8");
 
 export default function Home() {
   return (
-    <main className="mx-auto w-full max-w-[800px] flex-1 px-[clamp(16px,4vw,44px)] pt-[clamp(28px,6vw,64px)] pb-[56px]">
+    <main className="mx-auto w-full max-w-[960px] flex-1 px-[clamp(16px,4vw,44px)] pt-[clamp(28px,6vw,64px)] pb-[56px]">
       <section>
         <span className="inline-flex items-center rounded-full bg-olive-100 px-[10px] py-[3px] text-[11px] text-olive-800 tracking-[0.02em]">
           Bookmarklet · runs inside the page
