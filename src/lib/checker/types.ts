@@ -7,6 +7,7 @@ export type ToolKey =
   | "plausible"
   | "posthog"
   | "vercel"
+  | "datafast"
   | "meta"
   | "hotjar";
 

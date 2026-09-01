@@ -7,6 +7,7 @@ export const TOOL_KEYS: ToolKey[] = [
   "plausible",
   "posthog",
   "vercel",
+  "datafast",
   "meta",
   "hotjar",
 ];
@@ -20,6 +21,7 @@ export const TOOL_NAMES: Record<ToolKey, string> = {
   plausible: "Plausible",
   posthog: "PostHog",
   vercel: "Vercel Analytics",
+  datafast: "Datafast",
   meta: "Meta Pixel",
   hotjar: "Hotjar",
 };
@@ -48,6 +50,7 @@ export interface ToolSpec {
   key: ToolKey;
   name: string;
   tag: RegExp;
+  exclude?: RegExp;
   beacon?: RegExp;
   global?: string;
   idFromUrl?: RegExp;
@@ -71,6 +74,7 @@ export const TOOL_SPECS: ToolSpec[] = [
     key: "plausible",
     name: "Plausible",
     tag: /plausible\.io\/js\/script[a-z.]*\.js|\/js\/(plausible|script)[a-z.]*\.js/i,
+    exclude: /datafa\.st/i,
     beacon: /\/api\/event\b/i,
     global: "plausible",
     idFromData: "domain",
@@ -91,6 +95,15 @@ export const TOOL_SPECS: ToolSpec[] = [
     beacon: /\/_vercel\/insights\/(view|event)|\/va\/(view|event)/i,
     global: "va",
     debugTag: /script\.debug\.js/i,
+    unit: "event",
+  },
+  {
+    key: "datafast",
+    name: "Datafast",
+    tag: /datafa\.st\/js\/script[a-z.]*\.js/i,
+    beacon: /datafa\.st\/api\/events/i,
+    global: "datafast",
+    idFromData: "websiteId",
     unit: "event",
   },
   {
@@ -128,8 +141,13 @@ export const CMP_SPECS: CmpSpec[] = [
   { name: "CookieYes", tag: /cdn-cookieyes\.com/i, global: "cookieyes" },
 ];
 
+export function matchesTag(spec: ToolSpec, url: string): boolean {
+  if (!spec.tag.test(url)) return false;
+  return !spec.exclude?.test(url);
+}
+
 export function idsFromScripts(scripts: ScriptTag[], spec: ToolSpec): string[] {
-  const matched = scripts.filter((script) => spec.tag.test(script.src));
+  const matched = scripts.filter((script) => matchesTag(spec, script.src));
   if (spec.idFromData) {
     return matched
       .map((script) => spec.idFromData && script.data[spec.idFromData])

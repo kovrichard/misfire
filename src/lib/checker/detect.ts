@@ -16,6 +16,7 @@ import {
   CMP_SPECS,
   DEFAULT_TOOLS,
   idsFromScripts,
+  matchesTag,
   TOOL_SPECS,
   type ToolSpec,
 } from "./registry";
@@ -308,8 +309,8 @@ function detectSpec(
   blocker: string | null,
   required: boolean
 ): ToolReport | null {
-  const loaded = matching(snapshot.resources, spec.tag);
-  const declared = matching(scriptSrcs(snapshot), spec.tag);
+  const loaded = snapshot.resources.filter((url) => matchesTag(spec, url));
+  const declared = scriptSrcs(snapshot).filter((url) => matchesTag(spec, url));
   const booted = spec.global ? hasGlobal(snapshot, spec.global) : false;
   if (loaded.length === 0 && declared.length === 0 && !booted) {
     if (!required) return null;

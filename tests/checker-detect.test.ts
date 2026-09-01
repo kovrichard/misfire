@@ -443,3 +443,77 @@ describe("analyze — Vercel debug builds", () => {
     expect(titles(report, "Vercel Analytics")).not.toContain("Debug build in use");
   });
 });
+
+const DATAFAST_JS = "https://datafa.st/js/script.js";
+const DATAFAST_HIT = "https://datafa.st/api/events";
+
+describe("analyze — Datafast", () => {
+  it("reads the site from data-website-id and counts events", () => {
+    const report = analyze(
+      snap({
+        resources: [DATAFAST_JS, DATAFAST_HIT],
+        scripts: [tag(DATAFAST_JS, { websiteId: "68b5c1f0a2" })],
+        globals: ["datafast"],
+      })
+    );
+    const datafast = toolOf(report, "Datafast");
+    expect(datafast.ids).toEqual(["68b5c1f0a2"]);
+    expect(datafast.hits).toBe(1);
+    expect(datafast.level).toBe("ok");
+  });
+
+  it("warns when it loaded but window.datafast never appeared", () => {
+    const report = analyze(
+      snap({ resources: [DATAFAST_JS, DATAFAST_HIT], scripts: [tag(DATAFAST_JS)] })
+    );
+    expect(titles(report, "Datafast")).toContain(
+      "Script loaded but window.datafast is missing"
+    );
+  });
+
+  it("warns when the script is present but nothing was sent", () => {
+    const report = analyze(
+      snap({
+        resources: [DATAFAST_JS],
+        scripts: [tag(DATAFAST_JS)],
+        globals: ["datafast"],
+      })
+    );
+    expect(titles(report, "Datafast")).toContain("Nothing sent yet");
+  });
+
+  it("stays silent when unpicked and absent", () => {
+    expect(analyze(snap()).tools.map((t) => t.tool)).not.toContain("Datafast");
+  });
+
+  it("errors when picked but absent", () => {
+    const report = analyze(snap(), ["datafast"]);
+    expect(titles(report, "Datafast")).toContain("No Datafast tag found");
+  });
+});
+
+describe("analyze — vendors with colliding script paths", () => {
+  it("does not report Plausible for a Datafast install", () => {
+    const names = analyze(
+      snap({
+        resources: [DATAFAST_JS, DATAFAST_HIT],
+        scripts: [tag(DATAFAST_JS, { websiteId: "68b5c1f0a2" })],
+        globals: ["datafast"],
+      })
+    ).tools.map((tool) => tool.tool);
+    expect(names).not.toContain("Plausible");
+    expect(names).toContain("Datafast");
+  });
+
+  it("still recognises a proxied Plausible install", () => {
+    const proxied = "https://acme.com/js/script.js";
+    const names = analyze(
+      snap({
+        resources: [proxied, "https://acme.com/api/event"],
+        scripts: [tag(proxied, { domain: "acme.com" })],
+        globals: ["plausible"],
+      })
+    ).tools.map((tool) => tool.tool);
+    expect(names).toContain("Plausible");
+  });
+});

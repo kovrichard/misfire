@@ -69,6 +69,16 @@ export const TOOL_CARDS: ToolCard[] = [
     ],
   },
   {
+    key: "datafast",
+    kicker: "Measurement",
+    name: "Datafast",
+    items: [
+      "Website ID from the script tag",
+      "Loaded but window.datafast never booted",
+      "Present but no event sent",
+    ],
+  },
+  {
     key: "meta",
     kicker: "Advertising",
     name: "Meta Pixel",
