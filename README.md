@@ -154,6 +154,4 @@ work. It talks to neither Google nor Meta: the duplicates live in `dataLayer` an
 
 ## Built with
 
-[Catalyst](https://catalyst.konvert7.com), a Next.js starter kit. Everything it ships
-that Misfire does not need — database, auth, payments, email, tRPC, MCP — was removed
-before the first feature was written.
+[Catalyst](https://catalyst.konvert7.com)
