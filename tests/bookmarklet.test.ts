@@ -1,5 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { bookmarkletHref, loaderSnippet } from "../src/lib/checker/bookmarklet";
+import {
+  bookmarkletHref,
+  loaderSnippet,
+  pasteSnippet,
+} from "../src/lib/checker/bookmarklet";
 
 describe("loaderSnippet", () => {
   it("omits the tools param for the default trio", () => {
@@ -42,5 +46,23 @@ describe("bookmarkletHref", () => {
     const href = bookmarkletHref("https://misfire.test", ["hotjar"]);
     expect(href).toStartWith("javascript:(function(){");
     expect(href).toContain("&tools=hotjar");
+  });
+});
+
+describe("pasteSnippet", () => {
+  const bundle = "(()=>{/* checker */})();";
+
+  it("returns the bundle untouched for the default trio", () => {
+    expect(pasteSnippet(bundle, ["gtm", "ga4", "clarity"])).toBe(bundle);
+  });
+
+  it("returns it untouched when nothing is passed", () => {
+    expect(pasteSnippet(bundle)).toBe(bundle);
+  });
+
+  it("prefixes the selection when it differs from the default", () => {
+    const out = pasteSnippet(bundle, ["plausible", "hotjar"]);
+    expect(out).toStartWith('window.__misfireTools=["plausible","hotjar"];');
+    expect(out).toEndWith(bundle);
   });
 });

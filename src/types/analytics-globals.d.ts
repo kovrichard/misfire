@@ -6,6 +6,7 @@ declare global {
     google_tag_manager?: Record<string, unknown>;
     gtag?: (...args: unknown[]) => void;
     clarity?: (...args: unknown[]) => void;
+    __misfireTools?: unknown;
     fbq?: ((...args: unknown[]) => void) & { queue?: unknown[] };
   }
 }

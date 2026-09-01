@@ -17,6 +17,11 @@ export function loaderSnippet(host: string, tools: ToolKey[] = []): string {
   return LOADER.replace("HOST", host.replace(/\/+$/, "")).replace("SUFFIX", suffix);
 }
 
+export function pasteSnippet(bundle: string, tools: ToolKey[] = []): string {
+  if (tools.length === 0 || isDefaultSelection(tools)) return bundle;
+  return `window.__misfireTools=${JSON.stringify(tools)};\n${bundle}`;
+}
+
 export function bookmarkletHref(host: string, tools: ToolKey[] = []): string {
   return `javascript:(function(){${loaderSnippet(host, tools)}})();`;
 }

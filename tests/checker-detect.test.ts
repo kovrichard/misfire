@@ -387,3 +387,59 @@ describe("analyze — tool selection", () => {
     expect(names(analyze(snap(), []))).toEqual(["GTM", "GA4", "Clarity"]);
   });
 });
+
+const META_PURCHASE = "https://www.facebook.com/tr/?id=8891234567890&ev=Purchase";
+const VERCEL_DEBUG = "https://va.vercel-scripts.com/v1/script.debug.js";
+
+describe("analyze — Meta event breakdown", () => {
+  const withBeacons = (beacons: string[]) =>
+    analyze(
+      snap({
+        resources: [META_JS, ...beacons],
+        dataLayer: [["init", "8891234567890"]],
+        globals: ["fbq"],
+      })
+    );
+
+  it("names the events instead of only counting them", () => {
+    const finding = toolOf(withBeacons([META_HIT]), "Meta Pixel").findings.find(
+      (f) => f.title === "Sending data"
+    );
+    expect(finding?.detail).toContain("PageView");
+  });
+
+  it("summarises repeats", () => {
+    const report = withBeacons([META_HIT, META_PURCHASE, META_PURCHASE]);
+    const finding = toolOf(report, "Meta Pixel").findings.find(
+      (f) => f.title === "Sending data"
+    );
+    expect(finding?.detail).toContain("PageView");
+    expect(finding?.detail).toContain("Purchase x2");
+  });
+
+  it("warns when events fire but PageView never does", () => {
+    const report = withBeacons([META_PURCHASE]);
+    expect(titles(report, "Meta Pixel")).toContain("No PageView recorded");
+    expect(toolOf(report, "Meta Pixel").level).toBe("warn");
+  });
+
+  it("stays quiet about PageView when nothing was sent at all", () => {
+    const report = withBeacons([]);
+    expect(titles(report, "Meta Pixel")).toContain("Nothing sent yet");
+    expect(titles(report, "Meta Pixel")).not.toContain("No PageView recorded");
+  });
+});
+
+describe("analyze — Vercel debug builds", () => {
+  it("recognises the debug script and does not call it missing data", () => {
+    const report = analyze(snap({ resources: [VERCEL_DEBUG], globals: ["va"] }));
+    expect(titles(report, "Vercel Analytics")).toContain("Debug build in use");
+    expect(titles(report, "Vercel Analytics")).not.toContain("Nothing sent yet");
+  });
+
+  it("still reports silence on a production build", () => {
+    const report = analyze(snap({ resources: [VERCEL_JS], globals: ["va"] }));
+    expect(titles(report, "Vercel Analytics")).toContain("Nothing sent yet");
+    expect(titles(report, "Vercel Analytics")).not.toContain("Debug build in use");
+  });
+});

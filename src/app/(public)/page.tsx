@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Metadata } from "next";
-import { CopySnippet } from "@/components/checker/copy-snippet";
 import { InstallFlow } from "@/components/checker/install-flow";
 import conf from "@/lib/config";
 import { metaDescription, metaTitle, openGraph } from "@/lib/metadata";
@@ -16,16 +15,6 @@ export const metadata: Metadata = {
 };
 
 const bundle = readFileSync(join(process.cwd(), "public/check.js"), "utf-8");
-
-function CheckerPreview({ code }: Readonly<{ code: string }>) {
-  const kb = (code.length / 1024).toFixed(1);
-  return (
-    <>
-      {`${code.slice(0, 44)}…  `}
-      <span className="text-olive-700">{`// the whole checker, ${kb} KB, no network`}</span>
-    </>
-  );
-}
 
 export default function Home() {
   return (
@@ -45,26 +34,7 @@ export default function Home() {
         </p>
       </section>
 
-      <InstallFlow host={conf.host}>
-        <div className="mt-[var(--space-8)] rounded-[calc(var(--radius-lg)*1.15)] bg-olive-100 p-[clamp(18px,4vw,28px)]">
-          <h4 className="mb-[var(--space-2)] text-[20px] text-olive-900">
-            When the site has a strict CSP
-          </h4>
-          <p className="mb-[var(--space-3)] text-pretty text-[14.5px] text-olive-900 leading-[1.6]">
-            Both of the above fetch <code className="text-[13px]">check.js</code>, and a
-            strict <code className="text-[13px]">script-src</code> blocks that fetch.
-            Running the loader from the console does not get around it. The{" "}
-            <code className="text-[13px]">&lt;script src&gt;</code> it appends is still
-            the page loading a script. Paste the whole checker instead; it requests
-            nothing.
-          </p>
-          <CopySnippet
-            code={bundle}
-            bordered={false}
-            preview={<CheckerPreview code={bundle} />}
-          />
-        </div>
-      </InstallFlow>
+      <InstallFlow host={conf.host} bundle={bundle} />
 
       <section className="mt-[clamp(40px,7vw,60px)] flex flex-wrap items-center gap-[var(--space-4)] rounded-[calc(var(--radius-lg)*1.15)] bg-surface p-[clamp(18px,4vw,28px)]">
         <div className="min-w-[220px] flex-1">

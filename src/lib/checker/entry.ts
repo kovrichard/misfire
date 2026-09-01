@@ -7,17 +7,31 @@ import type { ToolKey } from "./types";
 const WATCH_MS = 20000;
 const POLL_MS = 1000;
 
-function selectedTools(): ToolKey[] {
+function knownKeys(raw: string[]): ToolKey[] {
+  const known = new Set<string>(TOOL_KEYS);
+  return raw.filter((key): key is ToolKey => known.has(key));
+}
+
+function fromScriptUrl(): ToolKey[] {
   const script = document.currentScript as HTMLScriptElement | null;
   if (!script?.src) return [];
   try {
     const raw = new URL(script.src).searchParams.get("tools");
-    if (!raw) return [];
-    const known = new Set<string>(TOOL_KEYS);
-    return raw.split(",").filter((key): key is ToolKey => known.has(key));
+    return raw ? knownKeys(raw.split(",")) : [];
   } catch {
     return [];
   }
+}
+
+function fromPastedGlobal(): ToolKey[] {
+  const raw = window.__misfireTools;
+  if (!Array.isArray(raw)) return [];
+  return knownKeys(raw.filter((key): key is string => typeof key === "string"));
+}
+
+function selectedTools(): ToolKey[] {
+  const fromUrl = fromScriptUrl();
+  return fromUrl.length > 0 ? fromUrl : fromPastedGlobal();
 }
 
 function start(): void {

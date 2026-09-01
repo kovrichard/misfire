@@ -65,7 +65,7 @@ export const TOOL_CARDS: ToolCard[] = [
     items: [
       "Detected on the same-origin insights path",
       "Loaded but no view recorded",
-      "Debug script recognised too",
+      "Debug builds flagged",
     ],
   },
   {
@@ -74,7 +74,7 @@ export const TOOL_CARDS: ToolCard[] = [
     name: "Meta Pixel",
     items: [
       "Pixel ID from the fbevents call",
-      "Hit fired or missing",
+      "PageView fired or missing",
       "Duplicate pixel IDs",
     ],
   },

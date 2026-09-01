@@ -53,6 +53,9 @@ export interface ToolSpec {
   idFromUrl?: RegExp;
   idFromData?: string;
   idFromDataLayer?: (dataLayer: unknown[]) => string[];
+  eventParam?: string;
+  baseEvent?: string;
+  debugTag?: RegExp;
   unit: string;
 }
 
@@ -87,6 +90,7 @@ export const TOOL_SPECS: ToolSpec[] = [
     tag: /\/_vercel\/insights\/script\.js|va\.vercel-scripts\.com\/v\d+\/script/i,
     beacon: /\/_vercel\/insights\/(view|event)|\/va\/(view|event)/i,
     global: "va",
+    debugTag: /script\.debug\.js/i,
     unit: "event",
   },
   {
@@ -96,6 +100,8 @@ export const TOOL_SPECS: ToolSpec[] = [
     beacon: /facebook\.com\/tr\b/i,
     global: "fbq",
     idFromDataLayer: metaPixelIds,
+    eventParam: "ev",
+    baseEvent: "PageView",
     unit: "hit",
   },
   {

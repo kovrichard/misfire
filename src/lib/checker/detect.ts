@@ -288,6 +288,20 @@ function specIds(spec: ToolSpec, snapshot: Snapshot, urls: string[]): string[] {
   return [...fromUrl, ...fromData, ...fromLayer];
 }
 
+function beaconEvents(spec: ToolSpec, beacons: string[]): string[] {
+  const param = spec.eventParam;
+  if (!param) return [];
+  return beacons
+    .map((url) => queryParam(url, param))
+    .filter((name): name is string => name !== null);
+}
+
+function eventSummary(events: string[]): string {
+  return [...tally(events)]
+    .map(([name, count]) => (count === 1 ? name : `${name} x${count}`))
+    .join(", ");
+}
+
 function detectSpec(
   spec: ToolSpec,
   snapshot: Snapshot,
@@ -311,6 +325,10 @@ function detectSpec(
   const allIds = specIds(spec, snapshot, [...loaded, ...declared]);
   const ids = unique(allIds);
   const beacons = spec.beacon ? matching(snapshot.resources, spec.beacon) : [];
+  const events = beaconEvents(spec, beacons);
+  const isDebug = spec.debugTag
+    ? matching([...loaded, ...declared], spec.debugTag).length > 0
+    : false;
   const findings: Finding[] = [];
 
   if (loaded.length === 0 && declared.length > 0) {
@@ -339,15 +357,33 @@ function detectSpec(
     );
   }
 
-  if (spec.beacon && beacons.length === 0) {
+  if (isDebug) {
+    findings.push(
+      warn(
+        "Debug build in use",
+        "This script logs to the console instead of reporting, so no events are expected."
+      )
+    );
+  }
+
+  if (spec.beacon && beacons.length === 0 && !isDebug) {
     findings.push(warn("Nothing sent yet", noHitDetail(spec.name, blocker)));
+  }
+
+  if (spec.baseEvent && beacons.length > 0 && !events.includes(spec.baseEvent)) {
+    findings.push(
+      warn(
+        `No ${spec.baseEvent} recorded`,
+        `Fired ${events.join(", ")} but never ${spec.baseEvent}, so page views are missing.`
+      )
+    );
   }
 
   if (findings.length === 0) {
     const label = ids.length > 0 ? ids.join(", ") : "installed";
-    findings.push(
-      ok("Sending data", `${label} — ${plural(beacons.length, spec.unit)} observed.`)
-    );
+    const sent =
+      events.length > 0 ? eventSummary(events) : plural(beacons.length, spec.unit);
+    findings.push(ok("Sending data", `${label} — ${sent} observed.`));
   }
 
   return report(spec.name, ids, beacons.length, findings, spec.unit);
